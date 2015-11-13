@@ -59,7 +59,7 @@ $(TMPDIR) :
 
 libWCSimBonsai.so : $(BONSAIOBJS) 
 	@if [ ! -d $(TMPDIR) ] ; then mkdir $(TMPDIR) ; echo mkdir $(TMPDIR) ;fi
-	@$(CXX) -shared -O $^ -o $(BONSAISO) $(BONSAILIBS)
+	@$(CXX) -shared -O $^ -o $(BONSAISO) $(BONSAILIBS) $(EXTRALIBS)
 
 ./bonsai/WCSimBonsaiDict.cc : $(BONSAISRC)
 	@echo Compiling rootcint ...
