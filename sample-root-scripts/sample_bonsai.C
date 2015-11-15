@@ -61,9 +61,14 @@ int sample_bonsai(char *filename=NULL, bool verbose=false)
   wcsimdirenv = getenv ("WCSIMDIR");
   if(wcsimdirenv !=  NULL){
     gSystem->Load("${WCSIMDIR}/libWCSimRoot.so");
-    gSystem->Load("${WCSIMDIR}/libWCSimBonsai.so");
   }else{
     gSystem->Load("../libWCSimRoot.so");
+  }
+  char* bonsaidirenv;
+  bonsaidirenv = getenv ("BONSAIDIR");
+  if(bonsaidirenv !=  NULL){
+    gSystem->Load("${BONSAIDIR}/libWCSimBonsai.so");
+  }else{
     gSystem->Load("../libWCSimBonsai.so");
   }
 #endif
