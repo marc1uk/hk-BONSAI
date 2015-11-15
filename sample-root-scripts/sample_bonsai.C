@@ -1,17 +1,25 @@
+//C++
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+//ROOT
 #include <TH1F.h>
-#include <stdio.h>     
-#include <stdlib.h>    
-#include <TROOT.h>    
-#include <TTree.h>    
-#include <TCanvas.h>    
-//#include <../include/WCSimRootEvent.hh>
-//#include <../include/WCSimRootGeom.hh>
-//#include <../include/WCSimRootLinkDef.hh>
+#include <TROOT.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TCanvas.h>
+#include <TSystem.h>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+//WCSim
+#include "WCSimRootEvent.hh"
+#include "WCSimRootGeom.hh"
+//BONSAI
+#include "WCSimBonsai.hh"
+#endif
 
 // Simple example of reading a generated Root file
-void sample_bonsai(char *filename=NULL, bool verbose=false)
+int sample_bonsai(char *filename=NULL, bool verbose=false)
 {
 	// Clear global scope
 	//gROOT->Reset();
@@ -45,6 +53,8 @@ void sample_bonsai(char *filename=NULL, bool verbose=false)
 	   gStyle->SetTitleBorderSize(0);
 	   gStyle->SetCanvasBorderMode(0);
 	   */
+
+#if !defined(__MAKECINT__)
 	// Load the library with class dictionary info
 	// (create with "gmake shared")
 	char* wcsimdirenv;
@@ -56,6 +66,8 @@ void sample_bonsai(char *filename=NULL, bool verbose=false)
 		gSystem->Load("../libWCSimRoot.so");
 		gSystem->Load("../libWCSimBonsai.so");
 	}
+#endif
+
 	WCSimBonsai* bonsai = new WCSimBonsai();
 
 	TFile *file;
@@ -220,10 +232,10 @@ void sample_bonsai(char *filename=NULL, bool verbose=false)
 				if(verbose) printf("Total pe: %d times( ",peForTube);
 				for (int j = timeArrayIndex; j < timeArrayIndex + peForTube; j++)
 				{
-					WCSimRootCherenkovHitTime HitTime = 
-						dynamic_cast<WCSimRootCherenkovHitTime>(timeArray->At(j));
+					WCSimRootCherenkovHitTime * HitTime = 
+						dynamic_cast<WCSimRootCherenkovHitTime*>(timeArray->At(j));
 
-					if(verbose) printf("%6.2f ", HitTime.GetTruetime() );	     
+					if(verbose) printf("%6.2f ", HitTime->GetTruetime() );	     
 				}
 				if(verbose) std::cout << ")" << std::endl;
 			}
@@ -276,7 +288,7 @@ void sample_bonsai(char *filename=NULL, bool verbose=false)
 		hvtx2->Fill(bsvertex[1]);
 		hvtx3->Fill(bsvertex[2]);
 		hvtx4->Fill(bsvertex[3]);
-		hvtxR->Fill(sqrt(bsvertex[0]**2+bsvertex[1]**2+bsvertex[2]**2));
+		hvtxR->Fill(sqrt(pow(bsvertex[0], 2) + pow(bsvertex[1], 2) + pow(bsvertex[2], 2)));
 		bsgy->Fill(bsgood[2]);
 
 		} // End of loop over trigger
@@ -297,4 +309,5 @@ void sample_bonsai(char *filename=NULL, bool verbose=false)
 		c1->cd(3); hvtx2->Draw();
 		c1->cd(4); hvtx3->Draw();
 		//c1->cd(4); h1->Draw();
-	}
+		return 0;
+}
