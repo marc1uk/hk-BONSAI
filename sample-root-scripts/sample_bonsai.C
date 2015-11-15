@@ -51,6 +51,7 @@ void sample_bonsai(char *filename=NULL, bool verbose=false)
 	wcsimdirenv = getenv ("WCSIMDIR");
 	if(wcsimdirenv !=  NULL){
 		gSystem->Load("${WCSIMDIR}/libWCSimRoot.so");
+		gSystem->Load("${WCSIMDIR}/libWCSimBonsai.so");
 	}else{
 		gSystem->Load("../libWCSimRoot.so");
 		gSystem->Load("../libWCSimBonsai.so");
@@ -97,6 +98,7 @@ void sample_bonsai(char *filename=NULL, bool verbose=false)
 		exit(9);
 	}
 	geotree->GetEntry(0);
+	bonsai->Init(geo);
 
 	// start with the main "subevent", as it contains most of the info
 	// and always exists.
