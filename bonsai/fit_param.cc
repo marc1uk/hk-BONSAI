@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <iostream>
 #include "fit_param.h"
 
 #define FLOAT_TYPE           1
@@ -360,13 +361,20 @@ extern "C"
 fit_param::fit_param(void)
 {
   if (nselall) return;
-  printf("reading fit_param.dat...\n");
+  const char * datadir = getenv("BONSAIDIR");
+  std::string  filename = datadir;
+  filename += "/data/fit_param.dat";
+  printf("reading %s...\n", filename.c_str());
 
-  char file_name[1024];
-  //findfile(file_name, "fit_param.dat", "SKPATH", ConstDirC, 1024);
+  //char file_name[1024];
+  //findfile(file_name, "$BONSAIDIR/fit_param.dat", "SKPATH", ConstDirC, 1024);
   //FILE          *pfile=fopen(file_name, "r");
 
-  FILE          *pfile=fopen("fit_param.dat","r");
+  FILE          *pfile=fopen(filename.c_str(), "r");
+  if(pfile == NULL) {
+    std::cerr << "Could not open " << filename << std::endl;
+    exit(-1);
+  }
 
   char          line[256];
   unsigned char ar;

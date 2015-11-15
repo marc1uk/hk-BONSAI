@@ -9,9 +9,9 @@ Low Energy reconstruction code
   * This will produce libWCSimBonsai.so in $BONSAIDIR
 
 ## How to run
-* $BONSAIDIR/sample-root-scripts/like.bin should be replaced for each geometry configure.
+* $BONSAIDIR/data/like.bin should be replaced for each geometry configure.
   * Default like.bin is Cyl60.bin (60m cylinder with 20" B&L PMT.)
-  * Other files exist in $BONSAIDIR/sample-root-scripts/likelihood_binary/
+  * Other files exist in $BONSAIDIR/data/likelihood_binary/
     * Cyl100.bin   : 100m cylinder with 20" B&L PMT
     * Cyl80.bin    : 80m cylinder with 20" B&L PMT
     * Cyl60.bin    : 60m cylinder with 20" B&L PMT
@@ -23,7 +23,6 @@ Low Energy reconstruction code
 * Run $BONSAIRDIR/sample-root-scripts/sample_bonsai.C on your WCSim output
   * It is recommended to use $BONSAIDIR/rootbonsai (a root wrapper) to run scripts in compiled mode.
     rootbonsai automatically handles telling ROOT of libs and incs
-  * Note: currently you need to run in the folder sample_root_scripts (to pickup the .dat and .bin files)
 
 ## The important part of the code
 * WCSimBonsai is the main class. It reads in geometry information, and calls reconstruction functions.

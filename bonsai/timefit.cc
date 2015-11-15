@@ -14,6 +14,7 @@
 #include "centroid.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include "binfile.h"
 
 // **********************************************
@@ -114,8 +115,11 @@ void timefit::load_dist(void)
   delete_dist();
 
   // ********************** load pdfs from file **********************
-  printf("Loading pdfs...\n");
-  binfile      bf("like.bin",'r');
+  const char * datadir = getenv("BONSAIDIR");
+  std::string  filename = datadir;
+  filename += "/data/like.bin";
+  printf("Loading pdfs from %s...\n", filename.c_str());
+  binfile      bf(filename.c_str(), 'r');
 
   if (bf.read(sizes,numbers,starts)!=2)
     {
