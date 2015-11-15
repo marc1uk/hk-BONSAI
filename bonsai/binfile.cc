@@ -55,7 +55,7 @@ extern "C"
 }
 
 
-binfile::binfile(char *name,char mode)
+binfile::binfile(const char *name,char mode)
 {
   char allmode[]=" b";
 
