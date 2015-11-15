@@ -32,7 +32,6 @@ extern void G__set_cpp_environmentWCSimBonsaiDict();
 #include "TObject.h"
 #include "TMemberInspector.h"
 #include "WCSimBonsai.hh"
-#include "WCSimRootGeom.hh"
 #include <algorithm>
 namespace std { }
 using namespace std;
