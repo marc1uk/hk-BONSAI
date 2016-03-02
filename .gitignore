@@ -1,0 +1,8 @@
+#build results
+libWCSimBonsai.so
+bonsai/WCSimBonsaiDict.cc
+tmp/
+
+#macro running
+sample-root-scripts/*_C.d
+sample-root-scripts/*_C.so

@@ -32,7 +32,6 @@ extern void G__set_cpp_environmentWCSimBonsaiDict();
 #include "TObject.h"
 #include "TMemberInspector.h"
 #include "WCSimBonsai.hh"
-#include "WCSimRootGeom.hh"
 #include <algorithm>
 namespace std { }
 using namespace std;
@@ -46,11 +45,9 @@ extern G__linked_taginfo G__WCSimBonsaiDictLN_TMemberInspector;
 extern G__linked_taginfo G__WCSimBonsaiDictLN_TObject;
 extern G__linked_taginfo G__WCSimBonsaiDictLN_vectorlEROOTcLcLTSchemaHelpercOallocatorlEROOTcLcLTSchemaHelpergRsPgR;
 extern G__linked_taginfo G__WCSimBonsaiDictLN_reverse_iteratorlEvectorlEROOTcLcLTSchemaHelpercOallocatorlEROOTcLcLTSchemaHelpergRsPgRcLcLiteratorgR;
-extern G__linked_taginfo G__WCSimBonsaiDictLN_TClonesArray;
 extern G__linked_taginfo G__WCSimBonsaiDictLN_vectorlETVirtualArraymUcOallocatorlETVirtualArraymUgRsPgR;
 extern G__linked_taginfo G__WCSimBonsaiDictLN_reverse_iteratorlEvectorlETVirtualArraymUcOallocatorlETVirtualArraymUgRsPgRcLcLiteratorgR;
 extern G__linked_taginfo G__WCSimBonsaiDictLN_iteratorlEbidirectional_iterator_tagcOTObjectmUcOlongcOconstsPTObjectmUmUcOconstsPTObjectmUaNgR;
-extern G__linked_taginfo G__WCSimBonsaiDictLN_WCSimRootPMT;
 extern G__linked_taginfo G__WCSimBonsaiDictLN_WCSimRootGeom;
 extern G__linked_taginfo G__WCSimBonsaiDictLN_WCSimBonsai;
 

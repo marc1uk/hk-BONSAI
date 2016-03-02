@@ -5,7 +5,5 @@
 #pragma link off all functions;
 
 #pragma link C++ class WCSimBonsai+;
-#pragma link C++ class WCSimRootGeom;
-#pragma link C++ class WCSimRootPMT;
 
 #endif

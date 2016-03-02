@@ -4,11 +4,16 @@
 
 ROOTCFLAGS   := $(shell root-config --cflags) -DUSE_ROOT -fPIC
 ROOTLIBS     := $(shell root-config --libs)
+ifndef WCSIMDIR
+$(error Environment variable WCSIMDIR is not set)
+endif
+WCSIMINCS     = -I$(WCSIMDIR)/include
+WCSIMLIBS     = -L$(WCSIMDIR) -lWCSimRoot
 
 CPPFLAGS  += -Wno-deprecated 
 CPPFLAGS  += -I$(PWD)/bonsai
-CPPFLAGS  += -I$(ROOTSYS)/include $(ROOTCFLAGS) 
-EXTRALIBS += $(ROOTLIBS)
+CPPFLAGS  += $(ROOTCFLAGS) $(WCSIMINCS)
+EXTRALIBS += $(ROOTLIBS) $(WCSIMLIBS)
 CXXFLAGS  += -D ConstDirC="\"$(CONSTDIR):$(CONSTDIR)/bonsai:\""
 #CXXFLAGS  += ""
 
@@ -22,7 +27,7 @@ BONSAISO    := libWCSimBonsai.so
 
 #BONSAISRC  := ./src/WCSimBonsaiEvent.cc ./include/WCSimBonsaiEvent.hh ./src/WCSimBonsaiGeom.cc ./include/WCSimBonsaiGeom.hh ./include/WCSimPmtInfo.hh ./include/WCSimBonsaiLinkDef.hh
 
-BONSAISRC := ./bonsai/WCSimBonsai.cc ./bonsai/WCSimRootGeom.cc \
+BONSAISRC := ./bonsai/WCSimBonsai.cc \
 			 ./bonsai/fit_param.cc ./bonsai/pmt_geometry.cc ./bonsai/binfile.cc ./bonsai/bonsai.cc ./bonsai/bonsaifit.cc ./bonsai/plato.cc \
 			 ./bonsai/searchgrid.cc ./bonsai/fourhitgrid.cc ./bonsai/centroid.cc ./bonsai/hits.cc ./bonsai/hitsel.cc ./bonsai/goodness.cc \
 			 ./bonsai/timefit.cc ./bonsai/likelihood.cc ./bonsai/vertex.cc ./bonsai/pot.cc ./bonsai/tree.cc ./bonsai/vertexfit.cc \
@@ -32,7 +37,6 @@ BONSAISRC := ./bonsai/WCSimBonsai.cc ./bonsai/WCSimRootGeom.cc \
 			 ./bonsai/bonsai.h ./bonsai/fit_param.h ./bonsai/hits.h ./bonsai/pmt_geometry.h ./bonsai/tree.h \
 			 ./bonsai/bonsaifit.h ./bonsai/fitquality.h ./bonsai/hitsel.h ./bonsai/pot.h ./bonsai/vertex.h \
 			 ./bonsai/bscalls.h ./bonsai/fourhitgrid.h ./bonsai/likelihood.h ./bonsai/searchgrid.h ./bonsai/vertexfit.h \
-			 ./bonsai/WCSimRootGeom.hh \
 			 ./bonsai/WCSimBonsaiLinkDef.hh
 
 BONSAIOBJS	:= $(WORKDIR)/tmp/WCSimBonsai/fit_param.o $(WORKDIR)/tmp/WCSimBonsai/pmt_geometry.o $(WORKDIR)/tmp/WCSimBonsai/binfile.o $(WORKDIR)/tmp/WCSimBonsai/bonsai.o $(WORKDIR)/tmp/WCSimBonsai/bonsaifit.o $(WORKDIR)/tmp/WCSimBonsai/plato.o \
@@ -40,7 +44,6 @@ BONSAIOBJS	:= $(WORKDIR)/tmp/WCSimBonsai/fit_param.o $(WORKDIR)/tmp/WCSimBonsai/
 			   $(WORKDIR)/tmp/WCSimBonsai/timefit.o $(WORKDIR)/tmp/WCSimBonsai/likelihood.o $(WORKDIR)/tmp/WCSimBonsai/vertex.o $(WORKDIR)/tmp/WCSimBonsai/pot.o $(WORKDIR)/tmp/WCSimBonsai/tree.o $(WORKDIR)/tmp/WCSimBonsai/vertexfit.o \
 			   $(WORKDIR)/tmp/WCSimBonsai/bscalls.o \
 			   $(WORKDIR)/tmp/WCSimBonsai/WCSimBonsai.o \
-			   $(WORKDIR)/tmp/WCSimBonsai/WCSimRootGeom.o \
 			   $(WORKDIR)/tmp/WCSimBonsai/WCSimBonsaiDict.o
 
 
@@ -63,9 +66,8 @@ libWCSimBonsai.so : $(BONSAIOBJS)
 
 ./bonsai/WCSimBonsaiDict.cc : $(BONSAISRC)
 	@echo Compiling rootcint ...
-	rootcint  -f ./bonsai/WCSimBonsaiDict.cc -c -I./bonsai -I$(shell root-config --incdir) \
+	rootcint  -f ./bonsai/WCSimBonsaiDict.cc -c -I./bonsai -I$(shell root-config --incdir) $(WCSIMINCS) \
 		WCSimBonsai.hh \
-		WCSimRootGeom.hh \
 		WCSimBonsaiLinkDef.hh
 #		binfile.h centroid.h goodness.h plato.h timefit.h \
 #		bonsai.h fit_param.h hits.h pmt_geometry.h tree.h \

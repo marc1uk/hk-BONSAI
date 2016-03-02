@@ -1,298 +1,318 @@
+//C++
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+//ROOT
 #include <TH1F.h>
-#include <stdio.h>     
-#include <stdlib.h>    
-#include <TROOT.h>    
-#include <TTree.h>    
-#include <TCanvas.h>    
-//#include <../include/WCSimRootEvent.hh>
-//#include <../include/WCSimRootGeom.hh>
-//#include <../include/WCSimRootLinkDef.hh>
+#include <TROOT.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TCanvas.h>
+#include <TSystem.h>
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+//WCSim
+#include "WCSimRootEvent.hh"
+#include "WCSimRootGeom.hh"
+//BONSAI
+#include "WCSimBonsai.hh"
+#endif
 
 // Simple example of reading a generated Root file
-void sample_bonsai(char *filename=NULL, bool verbose=false)
+int sample_bonsai(char *filename=NULL, bool verbose=false)
 {
-	// Clear global scope
-	//gROOT->Reset();
-	/*
-	   gStyle->SetOptStat(0);
-	   gStyle->SetCanvasColor(0);
-	   gStyle->SetTitleColor(1);
-	   gStyle->SetStatColor(0);
-	   gStyle->SetFrameFillColor(0);
-	   gStyle->SetPadColor(0);
-	   gStyle->SetPadTickX(1);
-	   gStyle->SetPadTickY(1);
-	   gStyle->SetTitleSize(0.04);
-	   gStyle->SetCanvasBorderMode(0);
-	   gStyle->SetFrameBorderMode(0);
-	   gStyle->SetFrameLineWidth(2);
-	   gStyle->SetPadBorderMode(0);
-	   gStyle->SetPalette(1);
-	   gStyle->SetTitleAlign(23);
-	   gStyle->SetTitleX(.5);
-	   gStyle->SetTitleY(0.99);
-	   gStyle->SetTitleBorderSize(0);
-	   gStyle->SetTitleFillColor(0);
-	   gStyle->SetHatchesLineWidth(2);
-	   gStyle->SetLineWidth(1.5);
-	   gStyle->SetTitleFontSize(0.07);
-	   gStyle->SetLabelSize(0.05,"X");
-	   gStyle->SetLabelSize(0.05,"Y");
-	   gStyle->SetTitleSize(0.04,"X");
-	   gStyle->SetTitleSize(0.04,"Y");
-	   gStyle->SetTitleBorderSize(0);
-	   gStyle->SetCanvasBorderMode(0);
-	   */
-	// Load the library with class dictionary info
-	// (create with "gmake shared")
-	char* wcsimdirenv;
-	wcsimdirenv = getenv ("WCSIMDIR");
-	if(wcsimdirenv !=  NULL){
-		gSystem->Load("${WCSIMDIR}/libWCSimRoot.so");
-	}else{
-		gSystem->Load("../libWCSimRoot.so");
-		gSystem->Load("../libWCSimBonsai.so");
-	}
-	WCSimBonsai* bonsai = new WCSimBonsai();
+  // Clear global scope
+  //gROOT->Reset();
+  /*
+    gStyle->SetOptStat(0);
+    gStyle->SetCanvasColor(0);
+    gStyle->SetTitleColor(1);
+    gStyle->SetStatColor(0);
+    gStyle->SetFrameFillColor(0);
+    gStyle->SetPadColor(0);
+    gStyle->SetPadTickX(1);
+    gStyle->SetPadTickY(1);
+    gStyle->SetTitleSize(0.04);
+    gStyle->SetCanvasBorderMode(0);
+    gStyle->SetFrameBorderMode(0);
+    gStyle->SetFrameLineWidth(2);
+    gStyle->SetPadBorderMode(0);
+    gStyle->SetPalette(1);
+    gStyle->SetTitleAlign(23);
+    gStyle->SetTitleX(.5);
+    gStyle->SetTitleY(0.99);
+    gStyle->SetTitleBorderSize(0);
+    gStyle->SetTitleFillColor(0);
+    gStyle->SetHatchesLineWidth(2);
+    gStyle->SetLineWidth(1.5);
+    gStyle->SetTitleFontSize(0.07);
+    gStyle->SetLabelSize(0.05,"X");
+    gStyle->SetLabelSize(0.05,"Y");
+    gStyle->SetTitleSize(0.04,"X");
+    gStyle->SetTitleSize(0.04,"Y");
+    gStyle->SetTitleBorderSize(0);
+    gStyle->SetCanvasBorderMode(0);
+  */
+  
+#if !defined(__MAKECINT__)
+  // Load the library with class dictionary info
+  // (create with "gmake shared")
+  char* wcsimdirenv;
+  wcsimdirenv = getenv ("WCSIMDIR");
+  if(wcsimdirenv !=  NULL){
+    gSystem->Load("${WCSIMDIR}/libWCSimRoot.so");
+  }else{
+    gSystem->Load("../libWCSimRoot.so");
+  }
+  char* bonsaidirenv;
+  bonsaidirenv = getenv ("BONSAIDIR");
+  if(bonsaidirenv !=  NULL){
+    gSystem->Load("${BONSAIDIR}/libWCSimBonsai.so");
+  }else{
+    gSystem->Load("../libWCSimBonsai.so");
+  }
+#endif
 
-	TFile *file;
-	// Open the file
-	if (filename==NULL){
-		file = new TFile("../wcsim.root","read");
-	}else{
-		file = new TFile(filename,"read");
-	}
-	if (!file->IsOpen()){
-		std::cout << "Error, could not open input file: " << filename << std::endl;
-		return -1;
-	}
+  WCSimBonsai* bonsai = new WCSimBonsai();
+  
+  TFile *file;
+  // Open the file
+  if (filename==NULL){
+    file = new TFile("../wcsim.root","read");
+  }else{
+    file = new TFile(filename,"read");
+  }
+  if (!file->IsOpen()){
+    std::cout << "Error, could not open input file: " << filename << std::endl;
+    return -1;
+  }
 
-	// Get the a pointer to the tree from the file
-	TTree *tree = (TTree*)file->Get("wcsimT");
+  // Get the a pointer to the tree from the file
+  TTree *tree = (TTree*)file->Get("wcsimT");
 
-	// Get the number of events
-	int nevent = tree->GetEntries();
-	if(verbose) printf("nevent %d\n",nevent);
+  // Get the number of events
+  int nevent = tree->GetEntries();
+  if(verbose) printf("nevent %d\n",nevent);
+  
+  // Create a WCSimRootEvent to put stuff from the tree in
+  WCSimRootEvent* wcsimrootsuperevent = new WCSimRootEvent();
 
-	// Create a WCSimRootEvent to put stuff from the tree in
+  // Set the branch address for reading from the tree
+  TBranch *branch = tree->GetBranch("wcsimrootevent");
+  branch->SetAddress(&wcsimrootsuperevent);
+  
+  // Force deletion to prevent memory leak 
+  tree->GetBranch("wcsimrootevent")->SetAutoDelete(kTRUE);
+  
+  
+  // Geometry tree - only need 1 "event"
+  TTree *geotree = (TTree*)file->Get("wcsimGeoT");
+  WCSimRootGeom *geo = 0; 
+  geotree->SetBranchAddress("wcsimrootgeom", &geo);
+  if(verbose) std::cout << "Geotree has " << geotree->GetEntries() << " entries" << std::endl;
+  if (geotree->GetEntries() == 0) {
+    exit(9);
+  }
+  geotree->GetEntry(0);
+  bonsai->Init(geo);
 
-	WCSimRootEvent* wcsimrootsuperevent = new WCSimRootEvent();
+  // start with the main "subevent", as it contains most of the info
+  // and always exists.
+  WCSimRootTrigger* wcsimrootevent;
 
-	// Set the branch address for reading from the tree
-	TBranch *branch = tree->GetBranch("wcsimrootevent");
-	branch->SetAddress(&wcsimrootsuperevent);
+  TH1F *h1 = new TH1F("PMT Hits", "PMT Hits", 200, 0, 200);
+  TH1F *hvtx0 = new TH1F("Event VTX0", "Event VTX0", 200, -1500, 1500);
+  //TH1F *hvtx1 = new TH1F("Event VTX1", "Event VTX1", 200, -1500, 1500);
+  TH1F *hvtx1 = new TH1F("Reconstructed X", "Reconsructed X", 200, -1500, 1500);
+  TH1F *hvtx2 = new TH1F("Reconstructed Y", "Reconsructed Y", 200, -1500, 1500);
+  TH1F *hvtx3 = new TH1F("Reconstructed Z", "Reconsructed Z", 200, -1500, 1500);
+  TH1F *hvtx4 = new TH1F("Reconstructed T", "Reconsructed T", 200, -1500, 1500);
+  TH1F *hvtxR = new TH1F("Reconstructed R", "Reconsructed R", 200, -1500, 1500);
+  TH1F *bsgy = new TH1F("Bonsai Goodness", "Bonsai Goodness", 200, -1500, 1500);
+  //TH1F *hvtx2 = new TH1F("Event VTX2", "Event VTX2", 200, -1500, 1500);
+  //TH1F *hvtx2 = new TH1F("SumQ", "SumQ", 200, 0, 200);
 
-	// Force deletion to prevent memory leak 
-	tree->GetBranch("wcsimrootevent")->SetAutoDelete(kTRUE);
-
-
-	// Geometry tree - only need 1 "event"
-	TTree *geotree = (TTree*)file->Get("wcsimGeoT");
-	WCSimRootGeom *geo = 0; 
-	geotree->SetBranchAddress("wcsimrootgeom", &geo);
-	if(verbose) std::cout << "Geotree has " << geotree->GetEntries() << " entries" << std::endl;
-	if (geotree->GetEntries() == 0) {
-		exit(9);
-	}
-	geotree->GetEntry(0);
-
-	// start with the main "subevent", as it contains most of the info
-	// and always exists.
-	WCSimRootTrigger* wcsimrootevent;
-
-	TH1F *h1 = new TH1F("PMT Hits", "PMT Hits", 200, 0, 200);
-	TH1F *hvtx0 = new TH1F("Event VTX0", "Event VTX0", 200, -1500, 1500);
-	//TH1F *hvtx1 = new TH1F("Event VTX1", "Event VTX1", 200, -1500, 1500);
-	TH1F *hvtx1 = new TH1F("Reconstructed X", "Reconsructed X", 200, -1500, 1500);
-	TH1F *hvtx2 = new TH1F("Reconstructed Y", "Reconsructed Y", 200, -1500, 1500);
-	TH1F *hvtx3 = new TH1F("Reconstructed Z", "Reconsructed Z", 200, -1500, 1500);
-	TH1F *hvtx4 = new TH1F("Reconstructed T", "Reconsructed T", 200, -1500, 1500);
-	TH1F *hvtxR = new TH1F("Reconstructed R", "Reconsructed R", 200, -1500, 1500);
-	TH1F *bsgy = new TH1F("Bonsai Goodness", "Bonsai Goodness", 200, -1500, 1500);
-	//TH1F *hvtx2 = new TH1F("Event VTX2", "Event VTX2", 200, -1500, 1500);
-	//TH1F *hvtx2 = new TH1F("SumQ", "SumQ", 200, 0, 200);
-
-	// Now loop over events
-	for (int ev=0; ev<nevent; ev++)
+  // Now loop over events
+  for (int ev=0; ev<nevent; ev++)
+    {
+      // Read the event from the tree into the WCSimRootEvent instance
+      tree->GetEntry(ev);      
+      wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
+      if(verbose){
+	printf("********************************************************");
+	printf("Evt, date %d %d\n", wcsimrootevent->GetHeader()->GetEvtNum(),
+	       wcsimrootevent->GetHeader()->GetDate());
+	printf("Mode %d\n", wcsimrootevent->GetMode());
+	printf("Number of subevents %d\n",
+	       wcsimrootsuperevent->GetNumberOfSubEvents());
+	
+	printf("Vtxvol %d\n", wcsimrootevent->GetVtxvol());
+	printf("Vtx %f %f %f\n", wcsimrootevent->GetVtx(0),
+	       wcsimrootevent->GetVtx(1),wcsimrootevent->GetVtx(2));
+      }
+      hvtx0->Fill(wcsimrootevent->GetVtx(0));
+      //hvtx1->Fill(wcsimrootevent->GetVtx(1));
+      //hvtx2->Fill(wcsimrootevent->GetVtx(2));
+      //hvtx2->Fill(wcsimrootevent->GetSumQ());
+      
+      if(verbose){
+	printf("Jmu %d\n", wcsimrootevent->GetJmu());
+	printf("Npar %d\n", wcsimrootevent->GetNpar());
+	printf("Ntrack %d\n", wcsimrootevent->GetNtrack());
+      }
+      // Now read the tracks in the event
+      
+      // Get the number of tracks
+      int ntrack = wcsimrootevent->GetNtrack();
+      if(verbose) printf("ntracks=%d\n",ntrack);
+      
+      int i;
+      // Loop through elements in the TClonesArray of WCSimTracks
+      for (i=0; i<ntrack; i++)
 	{
-		// Read the event from the tree into the WCSimRootEvent instance
-		tree->GetEntry(ev);      
-		wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
-		if(verbose){
-			printf("********************************************************");
-			printf("Evt, date %d %d\n", wcsimrootevent->GetHeader()->GetEvtNum(),
-					wcsimrootevent->GetHeader()->GetDate());
-			printf("Mode %d\n", wcsimrootevent->GetMode());
-			printf("Number of subevents %d\n",
-					wcsimrootsuperevent->GetNumberOfSubEvents());
+	  TObject *element = (wcsimrootevent->GetTracks())->At(i);
+	  
+	  WCSimRootTrack *wcsimroottrack = dynamic_cast<WCSimRootTrack*>(element);
+	  
+	  if(verbose){
+	    printf("Track ipnu: %d\n",wcsimroottrack->GetIpnu());
+	    printf("Track parent ID: %d\n",wcsimroottrack->GetParenttype());
+	    
+	    for (int j=0; j<3; j++)
+	      printf("Track dir: %d %f\n",j, wcsimroottrack->GetDir(j));
+	  }
+	  
+	  
+	}  // End of loop over tracks
+      
+      // Now look at the Cherenkov hits
 
-			printf("Vtxvol %d\n", wcsimrootevent->GetVtxvol());
-			printf("Vtx %f %f %f\n", wcsimrootevent->GetVtx(0),
-			wcsimrootevent->GetVtx(1),wcsimrootevent->GetVtx(2));
-		}
-		hvtx0->Fill(wcsimrootevent->GetVtx(0));
-		//hvtx1->Fill(wcsimrootevent->GetVtx(1));
-		//hvtx2->Fill(wcsimrootevent->GetVtx(2));
-		//hvtx2->Fill(wcsimrootevent->GetSumQ());
+      // Get the number of Cherenkov hits.
+      // Note... this is *NOT* the number of photons that hit tubes.
+      // It is the number of tubes hit with Cherenkov photons.
+      // The number of digitized tubes will be smaller because of the threshold.
+      // Each hit "raw" tube has several photon hits.  The times are recorded.
+      // See http://nwg.phy.bnl.gov/DDRD/cgi-bin/private/ShowDocument?docid=245
+      // for more information on the structure of the root file.
+      //  
+      // The following code prints out the hit times for the first 10 tubes and also
+      // adds up the total pe.
+      // 
+      // For digitized info (one time/charge tube after a trigger) use
+      // the digitized information.
+      //
+      
+      int ncherenkovhits     = wcsimrootevent->GetNcherenkovhits();
+      int ncherenkovdigihits = wcsimrootevent->GetNcherenkovdigihits(); 
+      
+      h1->Fill(ncherenkovdigihits);
+      if(verbose){
+	printf("node id: %i\n", ev);
+	printf("Ncherenkovhits %d\n",     ncherenkovhits);
+	printf("Ncherenkovdigihits %d\n", ncherenkovdigihits);
+	std::cout << "RAW HITS:" << std::endl;
+      }
 
-		if(verbose){
-			printf("Jmu %d\n", wcsimrootevent->GetJmu());
-			printf("Npar %d\n", wcsimrootevent->GetNpar());
-			printf("Ntrack %d\n", wcsimrootevent->GetNtrack());
-		}
-		// Now read the tracks in the event
-
-		// Get the number of tracks
-		int ntrack = wcsimrootevent->GetNtrack();
-		if(verbose) printf("ntracks=%d\n",ntrack);
-
-		int i;
-		// Loop through elements in the TClonesArray of WCSimTracks
-		for (i=0; i<ntrack; i++)
+      // Grab the big arrays of times and parent IDs
+      TClonesArray *timeArray = wcsimrootevent->GetCherenkovHitTimes();
+      
+      int totalPe = 0;
+      // Loop through elements in the TClonesArray of WCSimRootCherenkovHits
+      for (i=0; i< ncherenkovhits; i++)
+	{
+	  TObject *Hit = (wcsimrootevent->GetCherenkovHits())->At(i);
+	  WCSimRootCherenkovHit *wcsimrootcherenkovhit = 
+	    dynamic_cast<WCSimRootCherenkovHit*>(Hit);
+	  
+	  int tubeNumber     = wcsimrootcherenkovhit->GetTubeID();
+	  int timeArrayIndex = wcsimrootcherenkovhit->GetTotalPe(0);
+	  int peForTube      = wcsimrootcherenkovhit->GetTotalPe(1);
+	  WCSimRootPMT pmt   = geo->GetPMT(tubeNumber-1);
+	  totalPe += peForTube;
+	  
+	  
+	  if ( i < 10 ) // Only print first XX=10 tubes
+	    {
+	      if(verbose) printf("Total pe: %d times( ",peForTube);
+	      for (int j = timeArrayIndex; j < timeArrayIndex + peForTube; j++)
 		{
-			TObject *element = (wcsimrootevent->GetTracks())->At(i);
-
-			WCSimRootTrack *wcsimroottrack = dynamic_cast<WCSimRootTrack*>(element);
-
-			if(verbose){
-				printf("Track ipnu: %d\n",wcsimroottrack->GetIpnu());
-				printf("Track parent ID: %d\n",wcsimroottrack->GetParenttype());
-
-				for (int j=0; j<3; j++)
-					printf("Track dir: %d %f\n",j, wcsimroottrack->GetDir(j));
-			}
-
-
-		}  // End of loop over tracks
-
-		// Now look at the Cherenkov hits
-
-		// Get the number of Cherenkov hits.
-		// Note... this is *NOT* the number of photons that hit tubes.
-		// It is the number of tubes hit with Cherenkov photons.
-		// The number of digitized tubes will be smaller because of the threshold.
-		// Each hit "raw" tube has several photon hits.  The times are recorded.
-		// See http://nwg.phy.bnl.gov/DDRD/cgi-bin/private/ShowDocument?docid=245
-		// for more information on the structure of the root file.
-		//  
-		// The following code prints out the hit times for the first 10 tubes and also
-		// adds up the total pe.
-		// 
-		// For digitized info (one time/charge tube after a trigger) use
-		// the digitized information.
-		//
-
-		int ncherenkovhits     = wcsimrootevent->GetNcherenkovhits();
-		int ncherenkovdigihits = wcsimrootevent->GetNcherenkovdigihits(); 
-
-		h1->Fill(ncherenkovdigihits);
-		if(verbose){
-			printf("node id: %i\n", ev);
-			printf("Ncherenkovhits %d\n",     ncherenkovhits);
-			printf("Ncherenkovdigihits %d\n", ncherenkovdigihits);
-			std::cout << "RAW HITS:" << std::endl;
+		  WCSimRootCherenkovHitTime * HitTime = 
+		    dynamic_cast<WCSimRootCherenkovHitTime*>(timeArray->At(j));
+		  
+		  if(verbose) printf("%6.2f ", HitTime->GetTruetime() );	     
 		}
+	      if(verbose) std::cout << ")" << std::endl;
+	    }
+	  
+	} // End of loop over Cherenkov hits
+      if(verbose) std::cout << "Total Pe : " << totalPe << std::endl;
+      
+      // Look at digitized hit info
+      
+      // Get the number of digitized hits
+      // Loop over sub events
+      float bsT[500],bsQ[500];
+      float bsvertex[4],bsresult[6];
+      float bsgood[500];
+      int bsCAB[500];
+      int bsnhit[1]; //nsel (SLE)
+      int bsnsel[2]; //nsel (SLE)
+      if(verbose) std::cout << "DIGITIZED HITS:" << std::endl;
+      for (int index = 0 ; index < wcsimrootsuperevent->GetNumberOfEvents(); index++) 
+	{
+	  wcsimrootevent = wcsimrootsuperevent->GetTrigger(index);
+	  if(verbose) std::cout << "Sub event number = " << index << "\n";
+	  
+	  int ncherenkovdigihits = wcsimrootevent->GetNcherenkovdigihits();
+	  if(verbose) printf("Ncherenkovdigihits %d\n", ncherenkovdigihits);
+	  
+	  //for (i=0;i<(ncherenkovdigihits>4 ? 4 : ncherenkovdigihits);i++){
+	  bsnhit[0] = ncherenkovdigihits;
+	  for (i=0;i<ncherenkovdigihits;i++)
+	    {
+	      // Loop through elements in the TClonesArray of WCSimRootCherenkovDigHits
+	      
+	      TObject *element = (wcsimrootevent->GetCherenkovDigiHits())->At(i);
+	      
+	      WCSimRootCherenkovDigiHit *wcsimrootcherenkovdigihit = 
+		dynamic_cast<WCSimRootCherenkovDigiHit*>(element);
+	      
+	      bsT[i]=wcsimrootcherenkovdigihit->GetT();
+	      bsQ[i]=wcsimrootcherenkovdigihit->GetQ();
+	      bsCAB[i]=wcsimrootcherenkovdigihit->GetTubeId();
+	      
+	      if(verbose){
+		if ( i < 10 ) // Only print first XX=10 tubes
+		  printf("q, t, tubeid: %f %f %d \n",wcsimrootcherenkovdigihit->GetQ(),
+			 wcsimrootcherenkovdigihit->GetT(),wcsimrootcherenkovdigihit->GetTubeId());
+	      }
+	    } // End of loop over Cherenkov digihits
+	  bonsai->BonsaiFit( bsvertex, bsresult, bsgood, bsnsel, bsnhit, bsCAB, bsT, bsQ);
+	  hvtx1->Fill(bsvertex[0]);
+	  hvtx2->Fill(bsvertex[1]);
+	  hvtx3->Fill(bsvertex[2]);
+	  hvtx4->Fill(bsvertex[3]);
+	  hvtxR->Fill(sqrt(pow(bsvertex[0], 2) + pow(bsvertex[1], 2) + pow(bsvertex[2], 2)));
+	  bsgy->Fill(bsgood[2]);
+	  
+	} // End of loop over trigger
+      
+      // reinitialize super event between loops.
+      wcsimrootsuperevent->ReInitialize();
+      
+    } // End of loop over events
+  //  TCanvas c1("c1"); 
+  float win_scale = 0.75;
+  int n_wide(2);
+  int n_high(2);
+  TCanvas* c1 = new TCanvas("c1", "First canvas", 500*n_wide*win_scale, 500*n_high*win_scale);
+  c1->Draw();
+  c1->Divide(2,2);
+  c1->cd(1); hvtx0->Draw();
+  c1->cd(2); hvtx1->Draw();
+  c1->cd(3); hvtx2->Draw();
+  c1->cd(4); hvtx3->Draw();
+  //c1->cd(4); h1->Draw();
 
-		// Grab the big arrays of times and parent IDs
-		TClonesArray *timeArray = wcsimrootevent->GetCherenkovHitTimes();
-
-		int totalPe = 0;
-		// Loop through elements in the TClonesArray of WCSimRootCherenkovHits
-		for (i=0; i< ncherenkovhits; i++)
-		{
-			TObject *Hit = (wcsimrootevent->GetCherenkovHits())->At(i);
-			WCSimRootCherenkovHit *wcsimrootcherenkovhit = 
-				dynamic_cast<WCSimRootCherenkovHit*>(Hit);
-
-			int tubeNumber     = wcsimrootcherenkovhit->GetTubeID();
-			int timeArrayIndex = wcsimrootcherenkovhit->GetTotalPe(0);
-			int peForTube      = wcsimrootcherenkovhit->GetTotalPe(1);
-			WCSimRootPMT pmt   = geo->GetPMT(tubeNumber-1);
-			totalPe += peForTube;
-
-
-			if ( i < 10 ) // Only print first XX=10 tubes
-			{
-				if(verbose) printf("Total pe: %d times( ",peForTube);
-				for (int j = timeArrayIndex; j < timeArrayIndex + peForTube; j++)
-				{
-					WCSimRootCherenkovHitTime HitTime = 
-						dynamic_cast<WCSimRootCherenkovHitTime>(timeArray->At(j));
-
-					if(verbose) printf("%6.2f ", HitTime.GetTruetime() );	     
-				}
-				if(verbose) std::cout << ")" << std::endl;
-			}
-
-		} // End of loop over Cherenkov hits
-		if(verbose) std::cout << "Total Pe : " << totalPe << std::endl;
-
-		// Look at digitized hit info
-
-		// Get the number of digitized hits
-		// Loop over sub events
-		float bsT[500],bsQ[500];
-		float bsvertex[4],bsresult[6];
-		float bsgood[500];
-		int bsCAB[500];
-		int bsnhit[1]; //nsel (SLE)
-		int bsnsel[2]; //nsel (SLE)
-		if(verbose) std::cout << "DIGITIZED HITS:" << std::endl;
-		for (int index = 0 ; index < wcsimrootsuperevent->GetNumberOfEvents(); index++) 
-		{
-			wcsimrootevent = wcsimrootsuperevent->GetTrigger(index);
-			if(verbose) std::cout << "Sub event number = " << index << "\n";
-
-			int ncherenkovdigihits = wcsimrootevent->GetNcherenkovdigihits();
-			if(verbose) printf("Ncherenkovdigihits %d\n", ncherenkovdigihits);
-
-			//for (i=0;i<(ncherenkovdigihits>4 ? 4 : ncherenkovdigihits);i++){
-			bsnhit[0] = ncherenkovdigihits;
-			for (i=0;i<ncherenkovdigihits;i++)
-			{
-				// Loop through elements in the TClonesArray of WCSimRootCherenkovDigHits
-
-				TObject *element = (wcsimrootevent->GetCherenkovDigiHits())->At(i);
-
-				WCSimRootCherenkovDigiHit *wcsimrootcherenkovdigihit = 
-					dynamic_cast<WCSimRootCherenkovDigiHit*>(element);
-
-				bsT[i]=wcsimrootcherenkovdigihit->GetT();
-				bsQ[i]=wcsimrootcherenkovdigihit->GetQ();
-				bsCAB[i]=wcsimrootcherenkovdigihit->GetTubeId();
-
-				if(verbose){
-					if ( i < 10 ) // Only print first XX=10 tubes
-						printf("q, t, tubeid: %f %f %d \n",wcsimrootcherenkovdigihit->GetQ(),
-								wcsimrootcherenkovdigihit->GetT(),wcsimrootcherenkovdigihit->GetTubeId());
-				}
-			} // End of loop over Cherenkov digihits
-			bonsai->BonsaiFit( bsvertex, bsresult, bsgood, bsnsel, bsnhit, bsCAB, bsT, bsQ);
-		hvtx1->Fill(bsvertex[0]);
-		hvtx2->Fill(bsvertex[1]);
-		hvtx3->Fill(bsvertex[2]);
-		hvtx4->Fill(bsvertex[3]);
-		hvtxR->Fill(sqrt(bsvertex[0]**2+bsvertex[1]**2+bsvertex[2]**2));
-		bsgy->Fill(bsgood[2]);
-
-		} // End of loop over trigger
-
-		// reinitialize super event between loops.
-		wcsimrootsuperevent->ReInitialize();
-
-		} // End of loop over events
-		//  TCanvas c1("c1"); 
-		float win_scale = 0.75;
-		int n_wide(2);
-		int n_high(2);
-		TCanvas* c1 = new TCanvas("c1", "First canvas", 500*n_wide*win_scale, 500*n_high*win_scale);
-		c1->Draw();
-		c1->Divide(2,2);
-		c1->cd(1); hvtx0->Draw();
-		c1->cd(2); hvtx1->Draw();
-		c1->cd(3); hvtx2->Draw();
-		c1->cd(4); hvtx3->Draw();
-		//c1->cd(4); h1->Draw();
-	}
+  return 0;
+}

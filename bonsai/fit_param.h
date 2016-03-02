@@ -1,12 +1,14 @@
 #ifndef FIT_PARAM
 #define FIT_PARAM
 
+#include <string>
+
 #define FIT_PARAM_NONE -32767
 
 #define MAX_NUMBER 10
 class fit_param
 {
-  static char      *numbers[MAX_NUMBER];
+  static std::string numbers[MAX_NUMBER];
   static float     tres;
   static float     tcoin;
   static float     dlim;
@@ -59,7 +61,7 @@ class fit_param
   static float     cbrstop;
 
   char parse(char *line,unsigned char length,
-	     char *key1,char *key2,char *key3,
+	     const char *key1, const char *key2, const char *key3,
 	     char type,void *var);
   inline void parse(char *line);
   inline void ang_constr(float &theta_0,

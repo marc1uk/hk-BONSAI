@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <iostream>
 #include "fit_param.h"
 
 #define FLOAT_TYPE           1
@@ -13,7 +14,7 @@
 
 #define PI180 0.01745329252
 
-char *    fit_param::numbers[MAX_NUMBER];
+std::string fit_param::numbers[MAX_NUMBER];
 float     fit_param::tres;
 float     fit_param::tcoin;
 float     fit_param::dlim;
@@ -69,7 +70,7 @@ float     fit_param::cbrstop;
 // * array or variable                                         *
 // *************************************************************
 char fit_param::parse(char *line,unsigned char length,
-		      char *key1,char *key2,char *key3,
+		      const char *key1, const char *key2, const char *key3,
 		      char type,void *var)
 {
   unsigned char key_length1=strlen(key1),key_length2=strlen(key2);
@@ -81,9 +82,9 @@ char fit_param::parse(char *line,unsigned char length,
       (type==ARRAY_SHORT_INT_TYPE))
     for(ar=0; ar<MAX_NUMBER; ar++)
       {
-	nl=strlen(numbers[ar])-1;
+	nl=strlen(numbers[ar].c_str())-1;
 	for(pos1=0; pos1<length-nl; pos1++)
-	  if (!strncmp(line+pos1,numbers[ar]+1,nl))
+	  if (!strncmp(line+pos1,numbers[ar].c_str()+1,nl))
 	    break;
 	if (pos1<length-nl)
 	  {
@@ -360,13 +361,20 @@ extern "C"
 fit_param::fit_param(void)
 {
   if (nselall) return;
-  printf("reading fit_param.dat...\n");
+  const char * datadir = getenv("BONSAIDIR");
+  std::string  filename = datadir;
+  filename += "/data/fit_param.dat";
+  printf("reading %s...\n", filename.c_str());
 
-  char file_name[1024];
-  //findfile(file_name, "fit_param.dat", "SKPATH", ConstDirC, 1024);
+  //char file_name[1024];
+  //findfile(file_name, "$BONSAIDIR/fit_param.dat", "SKPATH", ConstDirC, 1024);
   //FILE          *pfile=fopen(file_name, "r");
 
-  FILE          *pfile=fopen("fit_param.dat","r");
+  FILE          *pfile=fopen(filename.c_str(), "r");
+  if(pfile == NULL) {
+    std::cerr << "Could not open " << filename << std::endl;
+    exit(-1);
+  }
 
   char          line[256];
   unsigned char ar;
@@ -506,64 +514,64 @@ void fit_param::print(void)
   printf("Number of Clusfit passes:                  %5d\n",np);
   for(ar=0; ar<np; ar++)
     {
-      printf("%s wall distance to invoke finer search:",numbers[ar]);
-      printspace(6-strlen(numbers[ar]));
+      printf("%s wall distance to invoke finer search:",numbers[ar].c_str());
+      printspace(6-strlen(numbers[ar].c_str()));
       printf("%7.2f cm\n",cdwall[ar]);
     }
   for(ar=0; ar<np; ar++)
     {
-      printf("%s minimum goodness difference to skim:",numbers[ar]);
-      printspace(6-strlen(numbers[ar]));
+      printf("%s minimum goodness difference to skim:",numbers[ar].c_str());
+      printspace(6-strlen(numbers[ar].c_str()));
       printf("%8.2f\n",gdiff[ar]);
     }
   printf("Final minimum goodness difference to skim: %8.2f\n",lastdiff);
   for(ar=0; ar<np; ar++)
     {
-      printf("%s goodness skim fraction:",numbers[ar]);
-      printspace(19-strlen(numbers[ar]));
+      printf("%s goodness skim fraction:",numbers[ar].c_str());
+      printspace(19-strlen(numbers[ar].c_str()));
       printf("%8.2f\n",gfrac[ar]);
     }
   printf("Final goodness skim fraction:              %8.2f\n",lastfrac);
   printf("Grid search goodness time window:          %8.2f ns\n",tim0);
   for(ar=0; ar<np; ar++)
     {
-      printf("%s search goodness time window:",numbers[ar]);
-      printspace(14-strlen(numbers[ar]));
+      printf("%s search goodness time window:",numbers[ar].c_str());
+      printspace(14-strlen(numbers[ar].c_str()));
       printf("%8.2f ns\n",time[ar]);
     }
   for(ar=0; ar<np; ar++)
     {
-      printf("%s search Clusfit minimum radius:",numbers[ar]);
-      printspace(12-strlen(numbers[ar]));
+      printf("%s search Clusfit minimum radius:",numbers[ar].c_str());
+      printspace(12-strlen(numbers[ar].c_str()));
       printf("%8.2f cm\n",rmin[ar]);
     }
   for(ar=0; ar<np; ar++)
     {
-      printf("%s search Clusfit stop radius:",numbers[ar]);
-      printspace(15-strlen(numbers[ar]));
+      printf("%s search Clusfit stop radius:",numbers[ar].c_str());
+      printspace(15-strlen(numbers[ar].c_str()));
       printf("%8.2f cm\n",rstop[ar]);
     }
   for(ar=0; ar<np; ar++)
     {
-      printf("%s Clusfit Cherenkov cone opening angle:",numbers[ar]);
-      printspace(7-strlen(numbers[ar]));
+      printf("%s Clusfit Cherenkov cone opening angle:",numbers[ar].c_str());
+      printspace(7-strlen(numbers[ar].c_str()));
       printf("%6.2f deg\n",acos(clustheta0[ar])/PI180);
-      printf("%s Clusfit angle positive deviation:",numbers[ar]);
-      printspace(9-strlen(numbers[ar]));
+      printf("%s Clusfit angle positive deviation:",numbers[ar].c_str());
+      printspace(9-strlen(numbers[ar].c_str()));
       if (clusthetaminus[ar]>0)
 	printf("%8.2f deg\n",(acos(clustheta0[ar]-sqrt(0.5/clusthetaminus[ar]))-
 		acos(clustheta0[ar]))/PI180);
       else
 	printf(" none\n");
-      printf("%s Clusfit angle negative deviation:",numbers[ar]);
-      printspace(9-strlen(numbers[ar]));
+      printf("%s Clusfit angle negative deviation:",numbers[ar].c_str());
+      printspace(9-strlen(numbers[ar].c_str()));
       if (clusthetaplus[ar]>0)
 	printf("%8.2f deg\n",(acos(clustheta0[ar])-
 		acos(clustheta0[ar]+sqrt(0.5/clusthetaplus[ar])))/PI180);
       else
 	printf(" none\n");
-      printf("%s Clusfit angle goodness weight:",numbers[ar]);
-      printspace(14-strlen(numbers[ar]));
+      printf("%s Clusfit angle goodness weight:",numbers[ar].c_str());
+      printspace(14-strlen(numbers[ar].c_str()));
       printf("%6.2f\n",clusdirweight[ar]);
     }
   printf("\n");
