@@ -1,3 +1,25 @@
+//C++
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+//ROOT
+#include <TH1F.h>
+#include <TROOT.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TCanvas.h>
+#include <TSystem.h>
+
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TApplication.h>
+#include <TStyle.h>
+#include <TH1.h>
+#include <TRint.h>
+#include <TColor.h>
+#include <TString.h>
+#include <math.h>
+
 void change_prompt()
 {
     TRint* rint = dynamic_cast<TRint*>(gApplication);
@@ -78,7 +100,6 @@ void t2k_style()
   t2kStyle->SetTextFont(42); //less bold
 
   // Add a greyscale palette for 2D plots
-  /*
   int ncol=50;
   double dcol = 1./float(ncol);
   double gray = 1;
@@ -114,11 +135,8 @@ void rootbonsai()
 
     gROOT->ProcessLine(".x $BONSAIDIR/rootbonsai/loadincs.C");    
     gROOT->ProcessLine(".x $BONSAIDIR/rootbonsai/loadlibs.C");    
-
     gSystem->cd(curr_dir.Data());
-
-    change_prompt();
-
+    //change_prompt();
     t2k_style();
     gROOT->SetStyle("T2K");
 }

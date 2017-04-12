@@ -41,7 +41,7 @@ class fitquality
 // *************************************************************
 // * determine, if pos is inside the fitting volume            *
 // *************************************************************
-  inline short int fit_volume(float *pos)
+  inline int fit_volume(float *pos)
     {
       if (pos[2]<-zmax) return(0);
       if (pos[2]>zmax) return(0);
@@ -51,7 +51,7 @@ class fitquality
 // * Determine, if pos is in fitting volume; if it isn't find  *
 // * point corrected, that is at the boundary                  *
 // *************************************************************
-  inline short int fit_volume(float *pos,float *corrected,float &rfac)
+  inline int fit_volume(float *pos,float *corrected,float &rfac)
     {
       // calculate radius^2
       rfac=pos[0]*pos[0]+pos[1]*pos[1];
@@ -113,7 +113,7 @@ class fitquality
     {
       return;
     };
-  inline virtual void set_branch(short int point)
+  inline virtual void set_branch(int point)
     {
       return;
     };

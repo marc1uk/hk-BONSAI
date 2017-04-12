@@ -2,7 +2,7 @@
 void itfitter_init(comtype *itgeom);
 void it_sort(comtype2 *itevent);
 int it_clusfit(float *vert,float *result,float *maxgood,int *nsel,
-	       comtype2 *itevent,void *gridbuffer,short int maxsize);
+	       comtype2 *itevent,void *gridbuffer,int maxsize);
 int it_bsfit(float *vertex,float *result,float *maxlike,int *nsel,
 	     comtype2 *itevent,void *gridbuffer);
 void it_clus_bonsai_fit(float *clusvert,float *bonsaivert,
@@ -24,7 +24,7 @@ void it_vfwrite(FILE *itvw,unsigned int event_number,int trigger_type,
 		float *cvtx,float *cdir,float cgof,
 		unsigned int bfit,unsigned int bvertex_tubes,
 		float *bvtx,float *bdir,float bgof,float bll,float bll0);
-short int it_vfread(FILE *itvw,unsigned int *event_number,int *trigger_type,
+int it_vfread(FILE *itvw,unsigned int *event_number,int *trigger_type,
 	       int *keep,int *flag,unsigned short *clock48_high,
 	       unsigned short *clock48_middle,unsigned short *clock48_low,
 	       unsigned int *fit_tubes,

@@ -49,11 +49,11 @@ class timefit
   timefit(hitsel *hs);
   ~timefit();
 
-  inline float fittime(short int fast,float *vertex,float &dt0);
+  inline float fittime(int fast,float *vertex,float &dt0);
   void  fittime(int ndt,float *dts,float &t0,float &dt);
-  float fittime(short int fast,float *vertex,float *direct,float &dt);
+  float fittime(int fast,float *vertex,float *direct,float &dt);
   float fittime(float *vertex,float *direct,float &dt,float tmi,float tpl);
-  float fittime_lcor(short int fast,float *vertex,float *direct,float &dt);
+  float fittime_lcor(int fast,float *vertex,float *direct,float &dt);
   float chargetest(float *vertex,float *direct,
 		  float &qin,float &qoutplus,float *qoutminus);
   float maxconecharge(float *vert,float *direct);
@@ -66,7 +66,7 @@ class timefit
   float tgood(float *vertex,float bgrate,float &guncor);
   float shapetest(void);
   inline int sets(void);
-  inline int gethits(short int fast,float *vertex,
+  inline int gethits(int fast,float *vertex,
 		     int *cabs,float *tofs,float *dirs,float *weight);
   inline void getdist(int set,float t0,int nbin,
 		      float tmin,float tmax,float *cont);

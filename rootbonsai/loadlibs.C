@@ -4,6 +4,9 @@
   TString libsb  = gSystem->Getenv("BONSAIDIR");
   TString libs   = libs0 + ":" + libsb + ":" + libswc + ":/usr/lib:/usr/local/lib:/opt/lib:/opt/local/lib";
   gSystem->SetDynamicPath(libs.Data());
+//  Char_t thestring[1000];
+//  snprintf(thestring, 1000, "%s", gSystem->GetDynamicPath());
+//  cout<<"dynamic path is "<<thestring<<endl;
 
   gSystem->Load("libGpad");
   gSystem->Load("libPhysics");
@@ -16,7 +19,6 @@
   gSystem->Load("libMinuit");
   //gSystem->Load("libMinuit2");
   gSystem->Load("libMathMore"); 
-
   gSystem->Load("libWCSimRoot.so");
   
   gSystem->Load("libWCSimBonsai.so");

@@ -144,11 +144,11 @@ void itfitter_init(comtype *itgeom)
   tf=new likelihood(geom->cylinder_radius(),geom->cylinder_height());
 }
 
-void qsort(float *cabs,short int *list,short int n,short int *first);
+void qsort(float *cabs,int *list,int n,int *first);
 // **********************************************
 // quick sort algorithm to sort the hit times
 // **********************************************
-void qsort(float *cabs,short int *list,short int n,short int *first)
+void qsort(float *cabs,int *list,int n,int *first)
 {
   if (n<2) return; // no need to sort for 1 or zero hits
   if (n==2)        // 2 hits are easy to sort ...
@@ -166,9 +166,9 @@ void qsort(float *cabs,short int *list,short int n,short int *first)
   qsort(cabs,list+half,n-half,first);
 
   // merge the two sorted sublists
-  short int *second=list+half;
+  int *second=list+half;
   int       m=n-half,firstp,secondp,nfirst=0;
-  short int firstel=*list;
+  int firstel=*list;
 
   // firstp is the index of the current element
   // of the first sublist, secondp of the second
@@ -207,7 +207,7 @@ void qsort(float *cabs,short int *list,short int n,short int *first)
 
 void it_sort(comtype2 *itevent)
 {
-  short int sortlist[2*itevent->it_index],n;
+  int sortlist[2*itevent->it_index],n;
   float     cabs[itevent->it_index];
   float     d1[itevent->it_index],d2[itevent->it_index];
   for(n=0; n<itevent->it_index; n++)
@@ -228,7 +228,7 @@ void it_sort(comtype2 *itevent)
 }
 
 int it_clusfit(float *vert,float *result,float *maxgood,int *nsel,
-	       comtype2 *itevent,void *gridbuffer,short int maxsize)
+	       comtype2 *itevent,void *gridbuffer,int maxsize)
 {
   *vert=vert[1]=vert[2]=0; *maxgood=vert[3]=-1;
   goodness    good(tf->sets(),tf->chargebins(),geom,itevent);
@@ -439,7 +439,7 @@ void it_vfwrite(FILE *itvw,unsigned int event_number,int trigger_type,
 	  bdir[0],bdir[1],bdir[2],bdir[3],bdir[4],bgof,bll,bll0);
 }
 
-short int it_vfread(FILE *itvr,unsigned int *event_number,int *trigger_type,
+int it_vfread(FILE *itvr,unsigned int *event_number,int *trigger_type,
 	       int *keep,int *flag,unsigned short *clock48_high,
 	       unsigned short *clock48_middle,unsigned short *clock48_low,
 	       unsigned int *fit_tubes,
@@ -777,7 +777,7 @@ char bsfileitread(unsigned int *eventnr,comtype2 *itevent)
 {
   int       *sizes,*numbers,nhit;
   void      **starts;
-  short int *cables;
+  int *cables;
   float     *tq;
 
   if (bsfile->read(sizes,numbers,starts)!=2) return(1);
@@ -789,7 +789,7 @@ char bsfileitread(unsigned int *eventnr,comtype2 *itevent)
       return(1);
     }
   nhit=numbers[0];
-  cables=(short int *)starts[0];
+  cables=(int *)starts[0];
   tq=(float *)starts[1];
   delete(sizes);
   delete(numbers);
@@ -811,12 +811,12 @@ void bsfileitwrite(unsigned int eventnr,comtype2 *itevent)
 {
    int       nhit=itevent->it_index,i,sizes[3],numbers[3];
    void      *starts[2];
-   short int cabs[nhit];
+   int cabs[nhit];
    float     tq[2*nhit+1];
 
    for(i=0; i<itevent->it_index; i++)
      {
-       cabs[i]=(short int)fabs(itevent->hits[i][0]);
+       cabs[i]=(int)fabs(itevent->hits[i][0]);
        tq[i]=itevent->hits[i][2];
        tq[nhit+i]=itevent->hits[i][1];
        *(unsigned int *) (tq+2*nhit)=eventnr;

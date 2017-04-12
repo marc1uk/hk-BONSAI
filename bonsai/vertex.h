@@ -18,7 +18,7 @@ class vertex: public timefit
   inline void set(float x,float y,float z,float r);
   inline void set(float x,float y,float z,float t,float r);
   inline void set(float ll);
-  inline float test(short int fast);
+  inline float test(int fast);
   inline float test(float tmi,float tpl);
 
  protected:
@@ -29,9 +29,9 @@ class vertex: public timefit
   inline void set_hitsel(float dlim,float tlim,float tw,float tr,float tc);
   inline void checksize(int newsize);
   inline void addsize(int add);
-  inline void new_vertex(short int fast,float x,float y,float z,float r);
+  inline void new_vertex(int fast,float x,float y,float z,float r);
   inline void new_vertex(float x,float y,float z,float t,float tmi,float tpl,float r);
-  inline void add_pmt_vertices(short int fast,float rpmt,float rcent,float zmax);
+  inline void add_pmt_vertices(int fast,float rpmt,float rcent,float zmax);
   inline void reset(void);
 
  public:

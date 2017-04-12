@@ -10,23 +10,23 @@
 // *************************************************************
 class fourhitgrid: public fit_param,public searchgrid
 {
-  short int        nsel;   // number of selected hits
+  int        nsel;   // number of selected hits
   float            *times; // ordered absolute times of selected hits
   int              ncombo; // desired number of combin.
   float            twin;   // chosen (absolute) time window
-  short int        *end;   // last possible hit for each `starting' hit
+  int        *end;   // last possible hit for each `starting' hit
 
   // print last possible hit for each hit starting a combin.
-  inline void      print_ranges(short int &hit,int &n3comb);
+  inline void      print_ranges(int &hit,int &n3comb);
   // set last allowed hit for each starting hit using half
   // of the largest possible time window
-  inline void      set_half_range(short int &start,short int &stop,
+  inline void      set_half_range(int &start,int &stop,
 				  int &n3comb);
   // calculate number of combinations if the window has changed
-  inline void      adjust_range(short int &hit,short int &not_expanded,
+  inline void      adjust_range(int &hit,int &not_expanded,
 				int &n3comb);
   // define allowed ranges of hit numbers using absolute timing
-  inline void      find_ranges(short int nthreshold);
+  inline void      find_ranges(int nthreshold);
   // compute all four-hit combination within end[start] range
   inline void      fourcombo(hitsel *hits);
   inline void      fourcombo(hitsel *hits,float tsig,
@@ -50,7 +50,7 @@ class fourhitgrid: public fit_param,public searchgrid
 	}
     }
   // pack BONSAI grid
-  inline void packset(void *buffer,short int max_size)
+  inline void packset(void *buffer,int max_size)
     {
       if(bongrid()<clusgrid())
 	searchgrid::packset(buffer,max_size,3);

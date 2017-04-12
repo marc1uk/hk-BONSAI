@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <iostream>
 #include "binfile.h"
 
 // **********************************************
@@ -797,7 +798,7 @@ void timefit::fittime(int ndt,float *dts,float &tpeak,float &dt)
 // **********************************************
 // fit the vertex time and direction, calculate ellipticity
 // **********************************************
-float timefit::fittime(short int fast,float *vertex,float *direct,float &dt)
+float timefit::fittime(int fast,float *vertex,float *direct,float &dt)
 {
   int      maxprod;
   axes     ax;
@@ -1074,7 +1075,7 @@ inline float timefit::addloglik(float *vertex,double *direct,double cang,float l
 // **********************************************
 // fit the vertex time and direction
 // **********************************************
-float timefit::fittime_lcor(short int fast,
+float timefit::fittime_lcor(int fast,
                             float *vertex,float *direct,float &dt)
 {
   int      maxprod;

@@ -19,7 +19,7 @@ hitsel(2*pair_distance_limit_fraction()*(r+z),
       ttof=new float[5*nselected()];
       tau=ttof+nselected();
       hitdir=ttof+2*nselected();
-      buffer=new short int[2*nselected()];
+      buffer=new int[2*nselected()];
       lists=buffer+nselected();
       nbranch=1;
       lists[0]=-1;
@@ -46,7 +46,7 @@ hitsel(pair_distance_limit_fraction()*geom->cylinder_circonference(),
       ttof=new float[5*nselected()];
       tau=ttof+nselected();
       hitdir=ttof+2*nselected();
-      buffer=new short int[2*nselected()];
+      buffer=new int[2*nselected()];
       lists=buffer+nselected();
       nbranch=1;
       lists[0]=-1;
@@ -72,7 +72,7 @@ hitsel(pair_distance_limit_fraction()*geom->cylinder_circonference(),
       ttof=new float[5*nselected()];
       tau=ttof+nselected();
       hitdir=ttof+2*nselected();
-      buffer=new short int[2*nselected()];
+      buffer=new int[2*nselected()];
       lists=buffer+nselected();
       nbranch=1;
       lists[0]=-1;
@@ -153,7 +153,7 @@ inline void goodness::create_lists(int n)
 {
   nbranch=n;
   delete(buffer);
-  buffer=new short int[(nbranch+1)*nselected()];
+  buffer=new int[(nbranch+1)*nselected()];
   lists=buffer+nselected();
   for (n=0; n<nbranch; n++)
     lists[n*nselected()]=-1;
@@ -164,7 +164,7 @@ inline void goodness::create_lists(int n)
 // *************************************************************
 inline void goodness::maximize(bonsaifit *fit,searchgrid *grid)
 {
-  short int n;
+  int n;
 
   if (npass()<=0) return;
   if (grid->nset()<1) return;
@@ -257,7 +257,7 @@ inline void goodness::maximize(bonsaifit *fit,searchgrid *grid)
 inline void goodness::maximize(bonsaifit *cfit,bonsaifit *bfit,
                                likelihood *bslike,searchgrid *grid)
 {
-  short int n;
+  int n;
 
   if (npass()<=0) return;
   if (grid->nset()<1) return;
@@ -386,7 +386,7 @@ inline float goodness::get_gdn0(void)
 // *************************************************************
 // * get time residual hit assuming latest light emission time *
 // *************************************************************
-inline float goodness::residual(short int hit)
+inline float goodness::residual(int hit)
 {
   return(ttof[hit]-t0);
 }
@@ -460,7 +460,7 @@ inline float goodness::get_cos_theta(void)
 // *************************************************************
 // * set sortlist to desired point                             *
 // *************************************************************
-inline void goodness::set_branch(short int point)
+inline void goodness::set_branch(int point)
 {
   sort_list=lists+nselected()*point;
   return;

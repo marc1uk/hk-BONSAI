@@ -3,6 +3,21 @@ libWCSimBonsai.so
 bonsai/WCSimBonsaiDict.cc
 tmp/
 
+#dictionaries etc
+WCSimBonsaiDict_rdict.pcm
+bonsai/WCSimBonsaiDict_rdict.pcm
+rootbonsai/libWCSimRoot.so
+rootbonsai/rootbonsai_C.d
+rootbonsai/rootbonsai_C.so
+rootbonsai/rootbonsai_C_ACLiC_dict_rdict.pcm
+sample-root-scripts/sample_bonsai_C_ACLiC_dict_rdict.pcm
+
 #macro running
 sample-root-scripts/*_C.d
 sample-root-scripts/*_C.so
+
+#output file
+bonsaiout.root
+
+#gedit backups
+*~

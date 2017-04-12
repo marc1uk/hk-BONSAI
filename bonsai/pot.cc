@@ -11,7 +11,7 @@
 // **********************************************
 // try fit new vertices based on 4-hit combinations
 // **********************************************
-inline void pot::add4vert(short int fast,int *cab,double *ffit)
+inline void pot::add4vert(int fast,int *cab,double *ffit)
 {
   int   nsol=event_hits->hitsel::vertex4(cab,ffit);
 

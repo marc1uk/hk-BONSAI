@@ -50,7 +50,7 @@ inline void vertex::set(float ll)
 // **********************************************
 // gets likelihood and direction from a new test vertex
 // **********************************************
-inline float vertex::test(short int fast)
+inline float vertex::test(int fast)
 {
   float dt,ret,dev;
 
@@ -183,7 +183,7 @@ inline void vertex::addsize(int add)
 // **********************************************
 // adds a new vertex position and tests it
 // **********************************************
-inline void vertex::new_vertex(short int fast,float x,float y,float z,float r)
+inline void vertex::new_vertex(int fast,float x,float y,float z,float r)
 {
   if (!inside_cylinder(x,y,z)) return;
   set(x,y,z,r);
@@ -214,7 +214,7 @@ inline void vertex::new_vertex(float x,float y,float z,float t,float tmi,float t
 // **********************************************
 // adds test vertices in front of each selected PMT
 // **********************************************
-inline void vertex::add_pmt_vertices(short int fast,float rpmt,float rcent,float zmax)
+inline void vertex::add_pmt_vertices(int fast,float rpmt,float rcent,float zmax)
 {
   if (nvert>=NVERTFLOAT)
     {

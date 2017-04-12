@@ -12,7 +12,7 @@ class pot: public vertex
 // PMT positiion vertices, center-of-tank and
 // set the height of the detector
 // **********************************************
-  inline void add4vert(short int fast,int *cab,double *ffit);
+  inline void add4vert(int fast,int *cab,double *ffit);
 
 protected:
   inline void set_radius(float ri,float rp,float rc,float to)

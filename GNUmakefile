@@ -7,14 +7,14 @@ ROOTLIBS     := $(shell root-config --libs)
 ifndef WCSIMDIR
 $(error Environment variable WCSIMDIR is not set)
 endif
-WCSIMINCS     = -I$(WCSIMDIR)/include
-WCSIMLIBS     = -L$(WCSIMDIR) -lWCSimRoot
+WCSIMINCS     = -I$(WCSIMDIR)/wcsim/include
+WCSIMLIBS     = -L$(WCSIMDIR)/wcsim -lWCSimRoot
 
 CPPFLAGS  += -Wno-deprecated 
 CPPFLAGS  += -I$(PWD)/bonsai
 CPPFLAGS  += $(ROOTCFLAGS) $(WCSIMINCS)
 EXTRALIBS += $(ROOTLIBS) $(WCSIMLIBS)
-CXXFLAGS  += -D ConstDirC="\"$(CONSTDIR):$(CONSTDIR)/bonsai:\""
+CXXFLAGS  += -D ConstDirC="\"$(CONSTDIR):$(CONSTDIR)/bonsai:\"" -g -Wall -fdiagnostics-color=always
 #CXXFLAGS  += ""
 
 CXX = g++
