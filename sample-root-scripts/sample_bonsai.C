@@ -130,6 +130,7 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
   }
   geotree->GetEntry(0);
   bonsai->Init(geo);
+  int numpmts = geo->GetWCNumPMT();
 
   // start with the main "subevent", as it contains most of the info
   // and always exists.
@@ -138,28 +139,53 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 //  ===============================================================
 //  ANNIE WCSim variables: tank -152<X<152, -212<Y<183, 15<Z<320 cm
 //  ===============================================================
+  bool isANNIE=true;
   const Float_t tank_start = 15.70;          // front face of the tank in cm
   const Float_t tank_radius = 152.4;         // tank radius in cm
   const Float_t tank_halfheight = 198.;      // tank half height in cm
   const Float_t tank_yoffset = -14.46;       // tank y offset in cm
   
-  TH1F *hTrueVtx_X = new TH1F("Event True VTX_X", "Event True VTX_X", 200, -400, 400);
-  TH1F *hTrueVtx_Y = new TH1F("Event True VTX_Y", "Event True VTX_Y", 200, -400, 400);
-  TH1F *hTrueVtx_Z = new TH1F("Event True VTX_Z", "Event True VTX_Z", 200, -300, 300);
+  // Position reconstruction
+  Float_t histoextent;
+  (isANNIE) ? histoextent=400 : histoextent = 2000;
+  TH1F *hTrueVtx_X = new TH1F("Event True VTX_X", "Event True VTX_X", 200, -histoextent, histoextent);
+  TH1F *hTrueVtx_Y = new TH1F("Event True VTX_Y", "Event True VTX_Y", 200, -histoextent, histoextent);
+  TH1F *hTrueVtx_Z = new TH1F("Event True VTX_Z", "Event True VTX_Z", 200, -histoextent, histoextent);
   //TH1F *hTrueVtx_T = new TH1F("Event True VTX_T", "Event True VTX_T", 200, -1500, 1500);
-  TH1F *hRecoVtx_X = new TH1F("Reconstructed X", "Reconsructed X", 200, -400, 400);
-  TH1F *hRecoVtx_Y = new TH1F("Reconstructed Y", "Reconsructed Y", 200, -400, 400);
-  TH1F *hRecoVtx_Z = new TH1F("Reconstructed Z", "Reconsructed Z", 200, -300, 300);
+  TH1F *hRecoVtx_X = new TH1F("Reconstructed X", "Reconsructed X", 200, -histoextent, histoextent);
+  TH1F *hRecoVtx_Y = new TH1F("Reconstructed Y", "Reconsructed Y", 200, -histoextent, histoextent);
+  TH1F *hRecoVtx_Z = new TH1F("Reconstructed Z", "Reconsructed Z", 200, -histoextent, histoextent);
   TH1F *hRecoVtx_T = new TH1F("Reconstructed T", "Reconsructed T", 200, -100, 100);
-  TH1F *hvtxR = new TH1F("Reconstructed R", "Reconsructed R", 200, 0, 600);
-  TH1F *bsgy = new TH1F("Bonsai Goodness", "Bonsai Goodness", 200, 0, 1);
-  //TH1F *hRecoVtx_Y = new TH1F("Event VTX2", "Event VTX2", 200, -1500, 1500);
-  //TH1F *hRecoVtx_Y = new TH1F("SumQ", "SumQ", 200, 0, 200);
+  TH1F *hvtxR = new TH1F("Reconstructed R", "Reconsructed R", 200, 0, histoextent);
+  TH1F *hVertexGoodness = new TH1F("Bonsai Vertex Fit Goodness", "Bonsai Vertex Fit Goodness", 200, 0, 1);
   TH1F *hVtxDiff_X = new TH1F("Vertex Error X", "Vertex Error X", 200, -200, 200);
   TH1F *hVtxDiff_Y = new TH1F("Vertex Error Y", "Vertex Error Y", 200, -200, 200);
   TH1F *hVtxDiff_Z = new TH1F("Vertex Error Z", "Vertex Error Z", 200, -200, 200);
+  TH1F *hVtxDiff_Tot = new TH1F("Total Vertex Error", "Total Vertex Error", 200, 300, 300);
   
-  TH1F *hNumDigits = new TH1F("Num PMT Digits", "Num PMT Digits", 200, 0, 200);
+  // Direction reconstruction
+  TH1F *hTrueDir_X = new TH1F("Event True X Dir", "Event True X Dir", 200, -TMath::Pi(), TMath::Pi());
+  TH1F *hTrueDir_Y = new TH1F("Event True Y Dir", "Event True Y Dir", 200, -TMath::Pi(), TMath::Pi());
+  TH1F *hTrueDir_Z = new TH1F("Event True Z Dir", "Event True Z Dir", 200, -TMath::Pi(), TMath::Pi());
+  TH1F *hRecoDir_X = new TH1F("Reconstructed X Dir", "Reconsructed X", 200, -TMath::Pi(), TMath::Pi());
+  TH1F *hRecoDir_Y = new TH1F("Reconstructed Y Dir", "Reconsructed Y", 200, -TMath::Pi(), TMath::Pi());
+  TH1F *hRecoDir_Z = new TH1F("Reconstructed Z Dir", "Reconsructed Z", 200, -TMath::Pi(), TMath::Pi());
+  TH1F *hDirDiff_X = new TH1F("Reconstructed Direction Error X", "Reconsructed Direction Error X", 200, -1., 1.);
+  TH1F *hDirDiff_Y = new TH1F("Reconstructed Direction Error Y", "Reconsructed Direction Error Y", 200, -1., 1.);
+  TH1F *hDirDiff_Z = new TH1F("Reconstructed Direction Error Z", "Reconsructed Direction Error Z", 200, -1., 1.);
+  TH1F *hDirectionGoodness = new TH1F("Bonsai Direction Fit Goodness", "Bonsai Direction Fit Goodness", 200, 0, 1);
+  
+  Float_t maxdigits, maxcharge;
+  (isANNIE) ? maxdigits=200 : maxdigits=2000;
+  (isANNIE) ? maxcharge=50 : maxcharge=500;
+  TH1F *hNumDigits = new TH1F("Num PMT Digits", "Num PMT Digits", 200, 0, maxdigits);
+  TH1F *hNumHitsPerDigit = new TH1F("Num Hits Per Digit", "Num Hits Per Digit", 200, 0, maxdigits);
+  TH1F *hNumNoiseOnlyDigits = new TH1F("Num Noise Only Digits", "Num Noise Only Digits", 200, 0, maxdigits);
+  TH1F *hNumPartialNoiseDigits = new TH1F("Num Partial Noise Digits", "Num Partial Noise Digits", 200, 0, maxdigits);
+  TH1F *hNoiseCharge = new TH1F("Charge from Noise Hits", "Charge from Noise Hits", 100,0,maxcharge);
+  TH1F *hPhotonCharge = new TH1F("Charge from Photon Hits", "Charge from Photon Hits", 100,0,maxcharge);
+  TH1F *hTotalCharge = new  TH1F("Total Digit Charge", "Total Digit Charge", 100,0,maxcharge);
+  //TH1F *hRecoVtx_Y = new TH1F("SumQ", "SumQ", 200, 0, 200);
 
   // Now loop over events
   for (int ev=0; ev<nevent; ev++)
@@ -178,21 +204,30 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 	printf("Vtxvol %d\n", wcsimrootevent->GetVtxvol());
 	// use GetVtxs(1,X) not GetVtx(X) to take first secondary, not neutrino, in case we didn't have GENIE
 	// if the event is in the tank, they will be the same
-	printf("Vtx %f %f %f\n", wcsimrootevent->GetVtxs(1,0),
-	       wcsimrootevent->GetVtxs(1,1),wcsimrootevent->GetVtxs(1,2));
+	printf("Vtx %f %f %f\n", wcsimrootevent->GetVtx(0),
+	       wcsimrootevent->GetVtx(1),wcsimrootevent->GetVtx(2));
       } else {
-	std::cout<<"Event "<<ev<<std::endl;
+	//std::cout<<"Event "<<ev<<std::endl;
       }
-      Float_t True_Vertex_X=wcsimrootevent->GetVtx(0)*1000.;
-      Float_t True_Vertex_Y=wcsimrootevent->GetVtx(1)*1000.;
-      Float_t True_Vertex_Z=wcsimrootevent->GetVtx(2)*1000.;
-/*
-      if(std::to_string(True_Vertex_X).substr(0,5)=="-99.9"){ // we don't have neutrino vtx info, need to load tracks:
-        int numtracks= wcsimrootevent->GetNtrack();
-        // scan through the truth tracks, find the primary muon and pull vertex info from it
-        for(int track=0; track<numtracks; track++){
-          WCSimRootTrack* nextrack = (WCSimRootTrack*)wcsimrootevent->GetTracks()->At(track);
-//           a WCSimRootTrack has methods: 
+      Double_t scaling=1.0;
+      Float_t True_Vertex_X, True_Vertex_Y, True_Vertex_Z;
+      if(isANNIE){
+        True_Vertex_X=wcsimrootevent->GetVtx(0)*scaling;
+        True_Vertex_Y=(wcsimrootevent->GetVtx(2)*scaling)-tank_start-tank_radius;
+        True_Vertex_Z=(wcsimrootevent->GetVtx(1)*scaling)-tank_yoffset;
+      } else {
+        True_Vertex_X=wcsimrootevent->GetVtx(0);
+        True_Vertex_Y=wcsimrootevent->GetVtx(1);
+        True_Vertex_Z=wcsimrootevent->GetVtx(2);
+      }
+
+      // load initial momentum direction from WCSimRootTrack. Need to find the muon.
+      Float_t True_Dir_X=0., True_Dir_Y=0., True_Dir_Z=0.;
+      int numtracks= wcsimrootevent->GetNtrack();
+      // scan through the truth tracks, find the primary muon and pull info from it
+      for(int track=0; track<numtracks; track++){
+        WCSimRootTrack* nextrack = (WCSimRootTrack*)wcsimrootevent->GetTracks()->At(track);
+//          a WCSimRootTrack has methods: 
 //          Int_t     GetIpnu()             pdg
 //          Int_t     GetFlag()             -1: neutrino primary, -2: neutrino target, 0: other
 //          Float_t   GetM()                mass
@@ -207,16 +242,24 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 //          Int_t     GetParenttype()       parent pdg, 0 for primary.
 //          Float_t   GetTime()             trj->GetGlobalTime(); stopping(?) time of particle
 //          Int_t     GetId()               wcsim trackid
-//          
-          if(nextrack->GetParenttype()==0){ 
-            True_Vertex_X=nextrack->GetStart(0);
-            True_Vertex_Y=nextrack->GetStart(1);
-            True_Vertex_Z=nextrack->GetStart(2);
+//        
+        if(nextrack->GetParenttype()==0&&nextrack->GetIpnu()==11){
+//          True_Vertex_X=nextrack->GetStart(0);
+//          True_Vertex_Y=nextrack->GetStart(1);
+//          True_Vertex_Z=nextrack->GetStart(2);
+          if(isANNIE){
+            True_Dir_X=nextrack->GetDir(0);
+            True_Dir_Y=nextrack->GetDir(1);
+            True_Dir_Z=nextrack->GetDir(2);
+            break;
+          } else {
+            True_Dir_X=nextrack->GetDir(0);
+            True_Dir_Y=nextrack->GetDir(2);
+            True_Dir_Z=nextrack->GetDir(1);
             break;
           }
         }
       }
-*/
 //    don't fill histograms with true vertex until we've checked if we managed a fit
       
       if(verbose){
@@ -231,6 +274,7 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
       if(verbose) printf("ntracks=%d\n",ntrack);
       
       int i;
+      /*
       // Loop through elements in the TClonesArray of WCSimTracks
       for (i=0; i<ntrack; i++)
 	{
@@ -248,6 +292,7 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 	  
 	  
 	}  // End of loop over tracks
+	*/
       
       // Now look at the Cherenkov hits
 
@@ -282,6 +327,8 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
       
       int totalPe = 0;
       // Loop through elements in the TClonesArray of WCSimRootCherenkovHits
+      std::map<int,int> PMTsread;
+      int numpeswithoutdoublecounting=0;
       for (i=0; i< ncherenkovhits; i++)
 	{
 	  TObject *Hit = (wcsimrootevent->GetCherenkovHits())->At(i);
@@ -293,6 +340,10 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 	  int peForTube      = wcsimrootcherenkovhit->GetTotalPe(1);
 	  WCSimRootPMT pmt   = geo->GetPMT(tubeNumber-1);
 	  totalPe += peForTube;
+	  if(PMTsread.count(tubeNumber)==0){
+	    numpeswithoutdoublecounting+=peForTube;
+	    PMTsread.emplace(tubeNumber,1);
+	  }
 	  
 	  
 	  if ( i < 10 ) // Only print first XX=10 tubes
@@ -303,13 +354,28 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 		  WCSimRootCherenkovHitTime * HitTime = 
 		    dynamic_cast<WCSimRootCherenkovHitTime*>(timeArray->At(j));
 		  
-		  if(verbose) printf("%6.2f ", HitTime->GetTruetime() );	     
+		  if(verbose) printf("%6.2f ", HitTime->GetTruetime() );
 		}
 	      if(verbose) std::cout << ")" << std::endl;
 	    }
 	  
 	} // End of loop over Cherenkov hits
+      cout<<" representing "<<totalPe<<" total pes; "<<numpeswithoutdoublecounting<<" without double counting"<<endl;
       if(verbose) std::cout << "Total Pe : " << totalPe << std::endl;
+      int numcherenkovhitttimes = wcsimrootevent->GetNcherenkovhittimes();
+      // Loop through elements in the TClonesArray of WCSimRootCherenkovHitTimes
+      cout<<"WCSimRootCherenkovHitTimes has "<<numcherenkovhitttimes<<" elements"<<endl;
+      /*
+      std::vector<int> darknoiseindexes;
+      for (i=0; i< numcherenkovhitttimes; i++){
+        WCSimRootCherenkovHitTime* hittimeobject = (WCSimRootCherenkovHitTime*)timeArray->At(i);
+        int parentid = hittimeobject->GetParentID();
+        if(parentid==-1){
+          //cout<<"ChereknovHitTime "<<i<<" IS DARK NOISE"<<endl;
+          darknoiseindexes.push_back(i);
+        }
+      }
+      */
       
       // Look at digitized hit info
       
@@ -322,13 +388,14 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
       int bsnhit[1]; //nsel (SLE)
       int bsnsel[2]; //nsel (SLE)
       if(verbose) std::cout << "DIGITIZED HITS:" << std::endl;
-      for (int index = 0 ; index < /*wcsimrootsuperevent->GetNumberOfEvents()*/1; index++) 
+      for (int index = 0 ; index < wcsimrootsuperevent->GetNumberOfEvents(); index++) 
 	{
 	  wcsimrootevent = wcsimrootsuperevent->GetTrigger(index);
 	  if(verbose) std::cout << "Sub event number = " << index << "\n";
 	  
 	  int ncherenkovdigihits = wcsimrootevent->GetNcherenkovdigihits();
 	  if(verbose) printf("Ncherenkovdigihits %d\n", ncherenkovdigihits);
+	  if(ncherenkovdigihits==0){ cout<<"event "<<ev<<" had no digits"<<endl; }
 	  
 	  //for (i=0;i<(ncherenkovdigihits>4 ? 4 : ncherenkovdigihits);i++){
 	  bsnhit[0] = ncherenkovdigihits;
@@ -362,24 +429,85 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 //  * float * maxlike    : OUTPUT: [2] is goodness of position fit. [1] is goodness of time fit
 //  * int * nsel         : OUTPUT: Number of selected hits
 	  int vertexfound = bonsai->BonsaiFit( bsvertex, bsresult, bsgood, bsnsel, bsnhit, bsCAB, bsT, bsQ);
-	  if(vertexfound){  // 
+	  if(vertexfound){
+	    //cout<<"vertex found"<<endl;
+	    // Reconsructed vertex
 	    hRecoVtx_X->Fill(bsvertex[0]);
 	    hRecoVtx_Y->Fill(bsvertex[1]);
 	    hRecoVtx_Z->Fill(bsvertex[2]);
 	    hRecoVtx_T->Fill(bsvertex[3]-950.);
 	    hvtxR->Fill(sqrt(pow(bsvertex[0], 2) + pow(bsvertex[1], 2) + pow(bsvertex[2], 2)));
-	    bsgy->Fill(bsgood[2]);
-	    
-	    hVtxDiff_X->Fill(True_Vertex_X-bsvertex[0]);
-	    hVtxDiff_Y->Fill((True_Vertex_Y+tank_yoffset)-bsvertex[1]);
-	    hVtxDiff_Z->Fill((True_Vertex_Z-tank_start-tank_radius)-bsvertex[2]);
-	    
+	    /* TODO: add true R */
+	    hVertexGoodness->Fill(bsgood[2]);
+	    // True vertex
 	    hTrueVtx_X->Fill(True_Vertex_X);
-	    hTrueVtx_Y->Fill(True_Vertex_Y+tank_yoffset);
-	    hTrueVtx_Z->Fill(True_Vertex_Z-tank_start-tank_radius);
+	    hTrueVtx_Y->Fill(True_Vertex_Y);
+	    hTrueVtx_Z->Fill(True_Vertex_Z);
+	    // Vertex error
+	    hVtxDiff_X->Fill(True_Vertex_X-bsvertex[0]);
+	    hVtxDiff_Y->Fill(True_Vertex_Y-bsvertex[1]);
+	    hVtxDiff_Z->Fill(True_Vertex_Z-bsvertex[2]);
+	    Double_t totalerror=TMath::Sqrt(TMath::Power(True_Vertex_X-bsvertex[0],2)+TMath::Power(True_Vertex_Y-bsvertex[1],2)+TMath::Power(True_Vertex_Z-bsvertex[2],2));
+	    hVtxDiff_Tot->Fill(totalerror);
 	    //hTrueVtx_T->Fill(wcsimrootevent->???);  // not directly saved in WCSim
+	    // Reconsructed direction
+	    hRecoDir_X->Fill(bsresult[0]);
+	    hRecoDir_Y->Fill(bsresult[1]);
+	    hRecoDir_Z->Fill(bsresult[2]);
+	    hDirectionGoodness->Fill(bsresult[3]);
+	    // True direction
+	    hTrueDir_X->Fill(True_Dir_X);
+	    hTrueDir_Y->Fill(True_Dir_Y);
+	    hTrueDir_Z->Fill(True_Dir_Z);
+	    
+	    // Direction error
+	    hDirDiff_X->Fill((True_Dir_X)-bsresult[0]);
+	    hDirDiff_Y->Fill((True_Dir_Y)-bsresult[1]);
+	    hDirDiff_Z->Fill((True_Dir_Z)-bsresult[2]);
+	    // Other
 	    //hRecoVtx_Y->Fill(wcsimrootevent->GetSumQ());
+	  } else { /*cout<<"vertex not found"<<endl;*/ }
+	  
+	  //cout<<"event "<<ev<<" had "<<ncherenkovdigihits<<" digits"<<endl;
+	  int numnoiseonlydigits=0, numpartialnoisedigits=0;
+	  int numdigitizedpesinthistrigger=0;
+	  for (i=0;i<ncherenkovdigihits;i++){
+	    // Loop over digits again
+	    WCSimRootCherenkovDigiHit *thedigihit = 
+	      (WCSimRootCherenkovDigiHit*)wcsimrootevent->GetCherenkovDigiHits()->At(i);
+	    int thedigitstube = thedigihit->GetTubeId();
+	    std::vector<int> photonids=thedigihit->GetPhotonIds();
+	    numdigitizedpesinthistrigger+=photonids.size();
+	    hNumHitsPerDigit->Fill(photonids.size());
+	    /*
+	    bool allnoise=true, somenoise=false;
+	    for(int counter=0; counter<photonids.size(); counter++){
+	      int thephotonsid=photonids.at(counter);
+	      WCSimRootCherenkovHitTime *thehittimeobject = 
+	        (WCSimRootCherenkovHitTime*)timeArray->At(thephotonsid);
+	      Int_t thephotonsparenttrackid=666;
+	      if(thehittimeobject) thephotonsparenttrackid = thehittimeobject->GetParentID();
+	      if(thephotonsparenttrackid==-1){ somenoise=true; } else { allnoise=false; }
+	      if(thephotonsparenttrackid==666){cout<<"digit "<<i<<", photon "<<counter<<" had no hittime"<<endl;}
+	    }
+	    if(somenoise&&!allnoise){
+	      //cout<<"DIGIT "<<i<<" had some noise hits *****************************"<<endl;
+	      numpartialnoisedigits++;
+	    } else if(allnoise){
+	      //cout<<"***************************************** DIGIT "<<i<<" ALL NOISE"<<endl;
+	      hNoiseCharge->Fill(bsQ[i]);
+	      numnoiseonlydigits++;
+	    } else if (!somenoise){
+	      //cout<<"no noise found in digit "<<i<<endl;
+	      hPhotonCharge->Fill(bsQ[i]);
+	    }
+	    */
+	    hTotalCharge->Fill(bsQ[i]);
 	  }
+	  cout<<"number of pes in all digits in this trigger was "<<numdigitizedpesinthistrigger<<endl;
+	  //cout<<"of "<<ncherenkovdigihits<<" digits, "<<numpartialnoisedigits<<" digits had some noise hits, and "<<numnoiseonlydigits<<" digits were all noise"<<endl;
+	  //hNumNoiseOnlyDigits->Fill(numnoiseonlydigits);
+	  //hNumPartialNoiseDigits->Fill(numpartialnoisedigits);
 	  
 	} // End of loop over trigger
       
@@ -388,20 +516,22 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
       
     } // End of loop over events
   //  TCanvas c1("c1"); 
+  
+  
+  // Set histogram titles, colours and draw.
   float win_scale = 0.75;
   int n_wide(2);
   int n_high(2);
-  TCanvas* c1 = new TCanvas("c1", "First canvas", 500*n_wide*win_scale, 500*n_high*win_scale);
-  c1->Draw();
-  c1->Divide(2,2);
+  
+  // Positions - true and reconstructed distributions
   hTrueVtx_X->SetLineColor(kRed);
-  hTrueVtx_X->GetXaxis()->SetTitle("True Position X [cm]");
+  hTrueVtx_X->GetXaxis()->SetTitle("Vertex Position X [cm]");
   hTrueVtx_X->GetYaxis()->SetTitle("Num Events");
   hTrueVtx_Y->SetLineColor(kRed);
-  hTrueVtx_Y->GetXaxis()->SetTitle("True Position Y [cm]");
+  hTrueVtx_Y->GetXaxis()->SetTitle("Vertex Position Y [cm]");
   hTrueVtx_Y->GetYaxis()->SetTitle("Num Events");
   hTrueVtx_Z->SetLineColor(kRed);
-  hTrueVtx_Z->GetXaxis()->SetTitle("True Position Z [cm]");
+  hTrueVtx_Z->GetXaxis()->SetTitle("Vertex Position Z [cm]");
   hTrueVtx_Z->GetYaxis()->SetTitle("Num Events");
   hRecoVtx_X->SetLineColor(kBlue);
   hRecoVtx_X->GetXaxis()->SetTitle("Vertex Position X [cm]");
@@ -415,12 +545,29 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
   hRecoVtx_T->SetLineColor(kBlue);
   hRecoVtx_T->GetXaxis()->SetTitle("Vertex Time [ns]");
   hRecoVtx_T->GetYaxis()->SetTitle("Num Events");
-  bsgy->SetLineColor(kBlue);
-  bsgy->GetXaxis()->SetTitle("Bonsai Goodness of Fit");
-  bsgy->GetYaxis()->SetTitle("Num Events");
   hvtxR->SetLineColor(kBlue);
   hvtxR->GetXaxis()->SetTitle("Reconstructed Event Radius [cm]");
   hvtxR->GetYaxis()->SetTitle("Num Events");
+  // Draw the plots
+  TCanvas* c1 = new TCanvas("c1", "First canvas", 500*n_wide*win_scale, 500*n_high*win_scale);
+  c1->Draw();
+  c1->Divide(2,2);
+  c1->cd(1); hTrueVtx_X->Draw();
+  c1->cd(2); hTrueVtx_Y->Draw();
+  c1->cd(3); hTrueVtx_Z->Draw();
+  c1->cd(1); hRecoVtx_X->Draw("same");
+  c1->cd(2); hRecoVtx_Y->Draw("same");
+  c1->cd(3); hRecoVtx_Z->Draw("same");
+  c1->cd(4); hvtxR->Draw();
+  TLegend *leg1 = new TLegend(0.2033426,0.8192982,0.45961,0.9210526,NULL,"brNDC");
+  leg1->SetBorderSize(0);
+  leg1->SetTextFont(62);
+  leg1->SetTextSize(0.04093567);
+  leg1->AddEntry(hTrueVtx_X,"True","l");
+  leg1->AddEntry(hRecoVtx_X,"Reconstructed","l");
+  c1->cd(1); leg1->Draw();
+  
+  // Reconstructed position errors
   hVtxDiff_X->GetXaxis()->SetTitle("Reconstructed X Position Error [cm]");
   hVtxDiff_X->GetYaxis()->SetTitle("Num Events");
   hVtxDiff_Y->GetXaxis()->SetTitle("Reconstructed Y Position Error [cm]");
@@ -429,26 +576,69 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
   hVtxDiff_Z->GetYaxis()->SetTitle("Num Events");
   hNumDigits->GetXaxis()->SetTitle("Num Digits in Event");
   hNumDigits->GetYaxis()->SetTitle("Num Events");
-  TLegend *leg1 = new TLegend(0.2033426,0.8192982,0.45961,0.9210526,NULL,"brNDC");
-  leg1->SetBorderSize(0);
-  leg1->SetTextFont(62);
-  leg1->SetTextSize(0.04093567);
-  leg1->AddEntry(hTrueVtx_X,"True","l");
-  leg1->AddEntry(hRecoVtx_X,"Reconstructed","l");
+  hVertexGoodness->GetXaxis()->SetTitle("Position Goodness of Fit");
+  hVertexGoodness->GetYaxis()->SetTitle("Num Events");
+  // Draw the plots
+  TCanvas* c2 = new TCanvas("c2", "Second canvas", 500*n_wide*win_scale, 500*n_high*win_scale);
+  c2->Divide(2,2);
+  c2->cd(1); hVtxDiff_X->Draw();
+  c2->cd(2); hVtxDiff_Y->Draw();
+  c2->cd(3); hVtxDiff_Z->Draw();
+  c2->cd(4); hVertexGoodness->Draw();
   
-  c1->cd(1); hTrueVtx_X->Draw();
-  c1->cd(2); hTrueVtx_Y->Draw();
-  c1->cd(3); hTrueVtx_Z->Draw();
+  // Directions - Reconsructed and true distributions
+  hTrueDir_X->SetLineColor(kRed);
+  hTrueDir_X->GetXaxis()->SetTitle("Particle X Direction");
+  hTrueDir_X->GetYaxis()->SetTitle("Num Events");
+  hTrueDir_Y->SetLineColor(kRed);
+  hTrueDir_Y->GetXaxis()->SetTitle("Particle Y Direction");
+  hTrueDir_Y->GetYaxis()->SetTitle("Num Events");
+  hTrueDir_Z->SetLineColor(kRed);
+  hTrueDir_Z->GetXaxis()->SetTitle("Particle Z Direction");
+  hTrueDir_Z->GetYaxis()->SetTitle("Num Events");
+  hRecoDir_X->SetLineColor(kBlue);
+  hRecoDir_X->GetXaxis()->SetTitle("Particle X Direction");
+  hRecoDir_X->GetYaxis()->SetTitle("Num Events");
+  hRecoDir_Y->SetLineColor(kBlue);
+  hRecoDir_Y->GetXaxis()->SetTitle("Particle Y Direction");
+  hRecoDir_Y->GetYaxis()->SetTitle("Num Events");
+  hRecoDir_Z->SetLineColor(kBlue);
+  hRecoDir_Z->GetXaxis()->SetTitle("Particle Z Direction");
+  hRecoDir_Z->GetYaxis()->SetTitle("Num Events");
+  // Draw the plots
+  TCanvas* c3 = new TCanvas("c3", "Third canvas", 500*n_wide*win_scale, 500*n_high*win_scale);
+  c3->Divide(2,2); 
+  c3->cd(1); hTrueDir_X->Draw();
+  c3->cd(2); hTrueDir_Y->Draw();
+  c3->cd(3); hTrueDir_Z->Draw();
+  c3->cd(1); hRecoDir_X->Draw("same");
+  c3->cd(2); hRecoDir_Y->Draw("same");
+  c3->cd(3); hRecoDir_Z->Draw("same");
+  c3->cd(1); leg1->Draw();
   
-  c1->cd(1); hRecoVtx_X->Draw("same");
-  c1->cd(2); hRecoVtx_Y->Draw("same");
-  c1->cd(3); hRecoVtx_Z->Draw("same");
+  // Reconstructed direction errors
+  hDirDiff_X->GetXaxis()->SetTitle("Reconstructed X Direction Error");
+  hDirDiff_X->GetYaxis()->SetTitle("Num Events");
+  hDirDiff_Y->GetXaxis()->SetTitle("Reconstructed Y Direction Error");
+  hDirDiff_Y->GetYaxis()->SetTitle("Num Events");
+  hDirDiff_Z->GetXaxis()->SetTitle("Reconstructed Z Direction Error");
+  hDirDiff_Z->GetYaxis()->SetTitle("Num Events");
+  hNumDigits->GetXaxis()->SetTitle("Num Digits in Event");
+  hNumDigits->GetYaxis()->SetTitle("Num Events");
+  hDirectionGoodness->GetXaxis()->SetTitle("Direction Goodness of Fit");
+  hDirectionGoodness->GetYaxis()->SetTitle("Num Events");
+  // Draw the plots
+  TCanvas* c4 = new TCanvas("c4", "Fourth canvas", 500*n_wide*win_scale, 500*n_high*win_scale);
+  c4->Divide(2,2); 
+  c4->cd(1); hDirDiff_X->Draw();
+  c4->cd(2); hDirDiff_Y->Draw();
+  c4->cd(3); hDirDiff_Z->Draw();
+  c4->cd(4); hDirectionGoodness->Draw();
   
-  c1->cd(1); leg1->Draw();
   
-  c1->cd(4); bsgy->Draw();
-  
+  // Write histograms to file
   fileout->cd();
+  hNumDigits->Write();
   hTrueVtx_X->Write();
   hTrueVtx_Y->Write();
   hTrueVtx_Z->Write();
@@ -456,12 +646,30 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
   hRecoVtx_Y->Write();
   hRecoVtx_Z->Write();
   hRecoVtx_T->Write();
-  bsgy->Write();
   hvtxR->Write();
-  hNumDigits->Write();
   hVtxDiff_X->Write();
   hVtxDiff_Y->Write();
   hVtxDiff_Z->Write();
+  hVtxDiff_Tot->Write();
+  hVertexGoodness->Write();
+  hTrueDir_X->Write();
+  hTrueDir_Y->Write();
+  hTrueDir_Z->Write();
+  hRecoDir_X->Write();
+  hRecoDir_Y->Write();
+  hRecoDir_Z->Write();
+  hDirDiff_X->Write();
+  hDirDiff_Y->Write();
+  hDirDiff_Z->Write();
+  hDirectionGoodness->Write();
+  
+  hNumDigits->Write();
+  hNumHitsPerDigit->Write();
+  hNumNoiseOnlyDigits->Write();
+  hNumPartialNoiseDigits->Write();
+  hNoiseCharge->Write();
+  hPhotonCharge->Write();
+  hTotalCharge->Write();
 //  fileout->Close();
 //  delete fileout;
   return 0;

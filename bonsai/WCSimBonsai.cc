@@ -45,11 +45,7 @@ WCSimBonsai::~WCSimBonsai()
 
 Int_t WCSimBonsai::Init(WCSimRootGeom *fGeo){
 
-//  ANNIE WCSim variables: tank -152<X<152, -212<Y<183, 15<Z<320 cm
-		const Float_t tank_start = 15.70;          // front face of the tank in cm
-		const Float_t tank_radius = 152.4;         // tank radius in cm
-		const Float_t tank_halfheight = 198.;      // tank half height in cm
-		const Float_t tank_yoffset = -14.46;        // tank y offset in cm
+bool isANNIE=true;
 
 		int fNPMT = fGeo->GetWCNumPMT();
 		// fill the arrays of geometry info
@@ -62,14 +58,31 @@ Int_t WCSimBonsai::Init(WCSimRootGeom *fGeo){
 			//std::cout<<"<WCSimBonsai::ReadGeom> ipmt="<<ipmt<<" tubeno="<<pmt.GetTubeNo()<<std::endl;
 
 //PMT geometory array for bonsai. T. Yano
+			if(isANNIE){
+			// TANK ORIENTATION IS DIFFERENT SO SWAP AROUND INDICES.
+			// TANK IS ALSO OFFSET FROM (0,0,0): tank -152<X<152, -212<Y<183, 15<Z<320 cm
+			const Float_t tank_start = 15.70;          // front face of the tank in cm
+			const Float_t tank_radius = 152.4;         // tank radius in cm
+			const Float_t tank_halfheight = 198.;      // tank half height in cm
+			const Float_t tank_yoffset = -14.46;       // tank y offset in cm
+			pmt_array.pmt_position[ipmt][0] = pmt.GetPosition(0)-fGeo->GetWCOffset(0);
+			pmt_array.pmt_position[ipmt][2] = pmt.GetPosition(1)-fGeo->GetWCOffset(1);
+			pmt_array.pmt_position[ipmt][1] = pmt.GetPosition(2)-fGeo->GetWCOffset(2);
+			pmt_array.pmt_direction[ipmt][0] = pmt.GetOrientation(0);
+			pmt_array.pmt_direction[ipmt][2] = pmt.GetOrientation(1);
+			pmt_array.pmt_direction[ipmt][1] = pmt.GetOrientation(2);
+			pmt_array.pmt_r[ipmt] = 
+			TMath::Sqrt( TMath::Power(pmt.GetPosition(0)-fGeo->GetWCOffset(0),2) + TMath::Power(pmt.GetPosition(2)-fGeo->GetWCOffset(2),2) );
+			} else {
 			pmt_array.pmt_position[ipmt][0] = pmt.GetPosition(0);
-			pmt_array.pmt_position[ipmt][1] = pmt.GetPosition(1)+tank_yoffset;
-			pmt_array.pmt_position[ipmt][2] = pmt.GetPosition(2)-tank_start-tank_radius;
+			pmt_array.pmt_position[ipmt][1] = pmt.GetPosition(1);
+			pmt_array.pmt_position[ipmt][2] = pmt.GetPosition(2);
 			pmt_array.pmt_direction[ipmt][0] = pmt.GetOrientation(0);
 			pmt_array.pmt_direction[ipmt][1] = pmt.GetOrientation(1);
 			pmt_array.pmt_direction[ipmt][2] = pmt.GetOrientation(2);
+			pmt_array.pmt_r[ipmt] = TMath::Sqrt( pmt.GetPosition(0)*pmt.GetPosition(0) + (pmt.GetPosition(1))*(pmt.GetPosition(1)) );
+			}
 			pmt_array.pmt_type[ipmt] = 1;
-			pmt_array.pmt_r[ipmt] = TMath::Sqrt( pmt.GetPosition(0)*pmt.GetPosition(0) + (pmt.GetPosition(1)+tank_yoffset)*(pmt.GetPosition(1)+tank_yoffset) );
 			pmt_array.pmt_theta[ipmt] = 0;
 			if (max_cylinder_height < pmt_array.pmt_position[ipmt][2]) max_cylinder_height = pmt_array.pmt_position[ipmt][2];
 			if (max_cylinder_radius < pmt_array.pmt_r[ipmt]) max_cylinder_radius = pmt_array.pmt_r[ipmt];
