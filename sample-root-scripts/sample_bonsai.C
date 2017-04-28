@@ -148,40 +148,42 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
   // Position reconstruction
   Float_t histoextent;
   (isANNIE) ? histoextent=400 : histoextent = 2000;
-  TH1F *hTrueVtx_X = new TH1F("Event True VTX_X", "Event True VTX_X", 200, -histoextent, histoextent);
-  TH1F *hTrueVtx_Y = new TH1F("Event True VTX_Y", "Event True VTX_Y", 200, -histoextent, histoextent);
-  TH1F *hTrueVtx_Z = new TH1F("Event True VTX_Z", "Event True VTX_Z", 200, -histoextent, histoextent);
+  TH1F *hTrueVtx_X = new TH1F("Event True VTX_X", "Event True VTX_X", 100, -histoextent, histoextent);
+  TH1F *hTrueVtx_Y = new TH1F("Event True VTX_Y", "Event True VTX_Y", 100, -histoextent, histoextent);
+  TH1F *hTrueVtx_Z = new TH1F("Event True VTX_Z", "Event True VTX_Z", 100, -histoextent, histoextent);
   //TH1F *hTrueVtx_T = new TH1F("Event True VTX_T", "Event True VTX_T", 200, -1500, 1500);
-  TH1F *hRecoVtx_X = new TH1F("Reconstructed X", "Reconsructed X", 200, -histoextent, histoextent);
-  TH1F *hRecoVtx_Y = new TH1F("Reconstructed Y", "Reconsructed Y", 200, -histoextent, histoextent);
-  TH1F *hRecoVtx_Z = new TH1F("Reconstructed Z", "Reconsructed Z", 200, -histoextent, histoextent);
-  TH1F *hRecoVtx_T = new TH1F("Reconstructed T", "Reconsructed T", 200, -100, 100);
-  TH1F *hvtxR = new TH1F("Reconstructed R", "Reconsructed R", 200, 0, histoextent);
-  TH1F *hVertexGoodness = new TH1F("Bonsai Vertex Fit Goodness", "Bonsai Vertex Fit Goodness", 200, 0, 1);
-  TH1F *hVtxDiff_X = new TH1F("Vertex Error X", "Vertex Error X", 200, -200, 200);
-  TH1F *hVtxDiff_Y = new TH1F("Vertex Error Y", "Vertex Error Y", 200, -200, 200);
-  TH1F *hVtxDiff_Z = new TH1F("Vertex Error Z", "Vertex Error Z", 200, -200, 200);
-  TH1F *hVtxDiff_Tot = new TH1F("Total Vertex Error", "Total Vertex Error", 200, 300, 300);
+  TH1F *hRecoVtx_X = new TH1F("Reconstructed X", "Reconsructed X", 100, -histoextent, histoextent);
+  TH1F *hRecoVtx_Y = new TH1F("Reconstructed Y", "Reconsructed Y", 100, -histoextent, histoextent);
+  TH1F *hRecoVtx_Z = new TH1F("Reconstructed Z", "Reconsructed Z", 100, -histoextent, histoextent);
+  TH1F *hRecoVtx_T = new TH1F("Reconstructed T", "Reconsructed T", 100, -100, 100);
+  TH1F *hvtxR = new TH1F("Reconstructed R", "Reconsructed R", 100, 0, histoextent);
+  TH1F *hVertexGoodness = new TH1F("Bonsai Vertex Fit Goodness", "Bonsai Vertex Fit Goodness", 100, 0, 1);
+  TH1F *hVtxDiff_X = new TH1F("Vertex Error X", "Vertex Error X", 100, -200, 200);
+  TH1F *hVtxDiff_Y = new TH1F("Vertex Error Y", "Vertex Error Y", 100, -200, 200);
+  TH1F *hVtxDiff_Z = new TH1F("Vertex Error Z", "Vertex Error Z", 100, -200, 200);
+  TH1F *hVtxDiff_Tot = new TH1F("Total Vertex Error", "Total Vertex Error", 100, 0, 300);
+  TH1F *hVtxDiff_Par = new TH1F("Vertex Error in Parallel Dir","Vertex Error in Parallel Dir", 100, 0, 300);
+  TH1F *hVtxDiff_Perp = new TH1F("Vertex Error in Perpendicular Dir","Vertex Error in Perpendicular Dir", 100, 0, 300);
   
   // Direction reconstruction
-  TH1F *hTrueDir_X = new TH1F("Event True X Dir", "Event True X Dir", 200, -TMath::Pi(), TMath::Pi());
-  TH1F *hTrueDir_Y = new TH1F("Event True Y Dir", "Event True Y Dir", 200, -TMath::Pi(), TMath::Pi());
-  TH1F *hTrueDir_Z = new TH1F("Event True Z Dir", "Event True Z Dir", 200, -TMath::Pi(), TMath::Pi());
-  TH1F *hRecoDir_X = new TH1F("Reconstructed X Dir", "Reconsructed X", 200, -TMath::Pi(), TMath::Pi());
-  TH1F *hRecoDir_Y = new TH1F("Reconstructed Y Dir", "Reconsructed Y", 200, -TMath::Pi(), TMath::Pi());
-  TH1F *hRecoDir_Z = new TH1F("Reconstructed Z Dir", "Reconsructed Z", 200, -TMath::Pi(), TMath::Pi());
-  TH1F *hDirDiff_X = new TH1F("Reconstructed Direction Error X", "Reconsructed Direction Error X", 200, -1., 1.);
-  TH1F *hDirDiff_Y = new TH1F("Reconstructed Direction Error Y", "Reconsructed Direction Error Y", 200, -1., 1.);
-  TH1F *hDirDiff_Z = new TH1F("Reconstructed Direction Error Z", "Reconsructed Direction Error Z", 200, -1., 1.);
-  TH1F *hDirectionGoodness = new TH1F("Bonsai Direction Fit Goodness", "Bonsai Direction Fit Goodness", 200, 0, 1);
+  TH1F *hTrueDir_X = new TH1F("Event True X Dir", "Event True X Dir", 100, -TMath::Pi(), TMath::Pi());
+  TH1F *hTrueDir_Y = new TH1F("Event True Y Dir", "Event True Y Dir", 100, -TMath::Pi(), TMath::Pi());
+  TH1F *hTrueDir_Z = new TH1F("Event True Z Dir", "Event True Z Dir", 100, -TMath::Pi(), TMath::Pi());
+  TH1F *hRecoDir_X = new TH1F("Reconstructed X Dir", "Reconsructed X", 100, -TMath::Pi(), TMath::Pi());
+  TH1F *hRecoDir_Y = new TH1F("Reconstructed Y Dir", "Reconsructed Y", 100, -TMath::Pi(), TMath::Pi());
+  TH1F *hRecoDir_Z = new TH1F("Reconstructed Z Dir", "Reconsructed Z", 100, -TMath::Pi(), TMath::Pi());
+  TH1F *hDirDiff_X = new TH1F("Reconstructed Direction Error X", "Reconsructed Direction Error X", 100, -1., 1.);
+  TH1F *hDirDiff_Y = new TH1F("Reconstructed Direction Error Y", "Reconsructed Direction Error Y", 100, -1., 1.);
+  TH1F *hDirDiff_Z = new TH1F("Reconstructed Direction Error Z", "Reconsructed Direction Error Z", 100, -1., 1.);
+  TH1F *hDirectionGoodness = new TH1F("Bonsai Direction Fit Goodness", "Bonsai Direction Fit Goodness", 100, 0, 1);
   
   Float_t maxdigits, maxcharge;
   (isANNIE) ? maxdigits=200 : maxdigits=2000;
   (isANNIE) ? maxcharge=50 : maxcharge=500;
-  TH1F *hNumDigits = new TH1F("Num PMT Digits", "Num PMT Digits", 200, 0, maxdigits);
-  TH1F *hNumHitsPerDigit = new TH1F("Num Hits Per Digit", "Num Hits Per Digit", 200, 0, maxdigits);
-  TH1F *hNumNoiseOnlyDigits = new TH1F("Num Noise Only Digits", "Num Noise Only Digits", 200, 0, maxdigits);
-  TH1F *hNumPartialNoiseDigits = new TH1F("Num Partial Noise Digits", "Num Partial Noise Digits", 200, 0, maxdigits);
+  TH1F *hNumDigits = new TH1F("Num PMT Digits", "Num PMT Digits", 100, 0, maxdigits);
+  TH1F *hNumHitsPerDigit = new TH1F("Num Hits Per Digit", "Num Hits Per Digit", 100, 0, maxdigits);
+  TH1F *hNumNoiseOnlyDigits = new TH1F("Num Noise Only Digits", "Num Noise Only Digits", 100, 0, maxdigits);
+  TH1F *hNumPartialNoiseDigits = new TH1F("Num Partial Noise Digits", "Num Partial Noise Digits", 100, 0, maxdigits);
   TH1F *hNoiseCharge = new TH1F("Charge from Noise Hits", "Charge from Noise Hits", 100,0,maxcharge);
   TH1F *hPhotonCharge = new TH1F("Charge from Photon Hits", "Charge from Photon Hits", 100,0,maxcharge);
   TH1F *hTotalCharge = new  TH1F("Total Digit Charge", "Total Digit Charge", 100,0,maxcharge);
@@ -223,6 +225,8 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 
       // load initial momentum direction from WCSimRootTrack. Need to find the muon.
       Float_t True_Dir_X=0., True_Dir_Y=0., True_Dir_Z=0.;
+      TVector3 Dir_Vec;
+      Float_t True_Dir_Theta=0., True_Dir_Phi=0., True_Dir_Alpha=0.;
       int numtracks= wcsimrootevent->GetNtrack();
       // scan through the truth tracks, find the primary muon and pull info from it
       for(int track=0; track<numtracks; track++){
@@ -249,13 +253,17 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 //          True_Vertex_Z=nextrack->GetStart(2);
           if(isANNIE){
             True_Dir_X=nextrack->GetDir(0);
-            True_Dir_Y=nextrack->GetDir(1);
-            True_Dir_Z=nextrack->GetDir(2);
+            True_Dir_Y=nextrack->GetDir(2);
+            True_Dir_Z=nextrack->GetDir(1);
+            Dir_Vec = TVector3(True_Dir_X,True_Dir_Y,True_Dir_Z);
+//            True_Dir_Theta=Dir_Vec.Theta();
+//            True_Dir_Phi=Dir_Vec.Phi();
+            
             break;
           } else {
             True_Dir_X=nextrack->GetDir(0);
-            True_Dir_Y=nextrack->GetDir(2);
-            True_Dir_Z=nextrack->GetDir(1);
+            True_Dir_Y=nextrack->GetDir(1);
+            True_Dir_Z=nextrack->GetDir(2);
             break;
           }
         }
@@ -449,6 +457,11 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 	    hVtxDiff_Z->Fill(True_Vertex_Z-bsvertex[2]);
 	    Double_t totalerror=TMath::Sqrt(TMath::Power(True_Vertex_X-bsvertex[0],2)+TMath::Power(True_Vertex_Y-bsvertex[1],2)+TMath::Power(True_Vertex_Z-bsvertex[2],2));
 	    hVtxDiff_Tot->Fill(totalerror);
+	    TVector3 Err_Vec(True_Vertex_X-bsvertex[0],True_Vertex_Y-bsvertex[2],True_Vertex_Z-bsvertex[2]);
+	    Float_t error_par=Err_Vec.Dot(Dir_Vec.Unit());
+	    hVtxDiff_Par->Fill(error_par);
+	    Float_t error_perp=Err_Vec.Perp(Dir_Vec);
+	    hVtxDiff_Perp->Fill(error_perp);
 	    //hTrueVtx_T->Fill(wcsimrootevent->???);  // not directly saved in WCSim
 	    // Reconsructed direction
 	    hRecoDir_X->Fill(bsresult[0]);
@@ -503,7 +516,7 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
 	    }
 	    */
 	    hTotalCharge->Fill(bsQ[i]);
-	  }
+	  } // End of loop over digi hits
 	  cout<<"number of pes in all digits in this trigger was "<<numdigitizedpesinthistrigger<<endl;
 	  //cout<<"of "<<ncherenkovdigihits<<" digits, "<<numpartialnoisedigits<<" digits had some noise hits, and "<<numnoiseonlydigits<<" digits were all noise"<<endl;
 	  //hNumNoiseOnlyDigits->Fill(numnoiseonlydigits);
@@ -517,6 +530,10 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
     } // End of loop over events
   //  TCanvas c1("c1"); 
   
+  Int_t bini=1;
+  while(hVtxDiff_Tot->Integral(0,bini)<(hVtxDiff_Tot->GetEntries()*0.68)) bini++;
+  Double_t one_sigma_res=hVtxDiff_Tot->GetBinLowEdge(bini);
+  cout<<"one_sigma_res = "<<one_sigma_res<<endl;
   
   // Set histogram titles, colours and draw.
   float win_scale = 0.75;
@@ -651,6 +668,8 @@ int sample_bonsai(const char *filename=NULL, bool verbose=false)
   hVtxDiff_Y->Write();
   hVtxDiff_Z->Write();
   hVtxDiff_Tot->Write();
+  hVtxDiff_Par->Write();
+  hVtxDiff_Perp->Write();
   hVertexGoodness->Write();
   hTrueDir_X->Write();
   hTrueDir_Y->Write();
