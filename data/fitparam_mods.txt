@@ -1,0 +1,9 @@
+Maximum # of hits to do all 4-hit combin.:     40
+Initial grid constant:                         10.00 cm
+Minimum wall distance for 4-hit vertices:     -5.00 cm
+
+Clusfit grid constant:                       10.00 cm
+
+BONSAI grid constant:                         10.00 cm
+Minimum wall distance for BONSAI vertex:     -5.00 cm
+Wall distance to invoke fine search:          -2.00 cm
