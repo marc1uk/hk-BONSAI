@@ -1,5 +1,8 @@
 // Based on Root test Event.cxx
 ////////////////////////////////////////////////////////////////////////
+#ifndef WCSIMBONSAIVERBOSE
+//#define WCSIMBONSAIVERBOSE 1
+#endif
 
 //#include "G4ios.hh"
 #include "TObject.h"
@@ -51,7 +54,9 @@ bool isANNIE=true;
 		// fill the arrays of geometry info
 		WCSimRootPMT pmt;
 
+#ifdef WCSIMBONSAIVERBOSE
 		std::cout << " Geometry Loading (NPMT=" << fNPMT << ") " << std::endl;
+#endif
 		double max_cylinder_height=0, max_cylinder_radius=0; //PMT geometory array for bonsai. T. Yano
 		for (int ipmt=0; ipmt<fNPMT; ipmt++){    
 			pmt = fGeo->GetPMT(ipmt);
@@ -88,7 +93,9 @@ bool isANNIE=true;
 			if (max_cylinder_radius < pmt_array.pmt_r[ipmt]) max_cylinder_radius = pmt_array.pmt_r[ipmt];
 			//PMT geometory array for bonsai. T. Yano
 
+#ifdef WCSIMBONSAIVERBOSE
 			std::cout << pmt_array.pmt_position[ipmt][0] << " " << pmt_array.pmt_position[ipmt][1] << " " << pmt_array.pmt_position[ipmt][1] << " (" << ipmt/(double)fNPMT << "%)"<< std::endl;
+#endif
 		}
 		//PMT geometory array for bonsai. T. Yano
 		pmt_array.n_pmts=fNPMT;

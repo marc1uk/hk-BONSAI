@@ -4,6 +4,12 @@
 #include <stdlib.h>
 //ROOT
 #include <TH1F.h>
+#include <TF1.h>
+#include <TVector3.h>
+#include <TMath.h>
+#include <TChain.h>
+#include <TStopwatch.h>
+#include <TLegend.h>
 #include <TROOT.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -43,8 +49,15 @@ const Float_t tank_radius = 152.4;         // tank radius in cm
 const Float_t tank_halfheight = 198.;      // tank half height in cm
 const Float_t tank_yoffset = -14.46;       // tank y offset in cm
 
+//const double miploss = 2.5;
+//const double ecorroffset = 204.105;
+//const double ecorrgrad = -2.52276;
+//const TF1 energylossvslength("lin","pol1(0)");
+////TF1 energylossvslength("lin","pol1(0)");
+////energylossvslength.SetParameters(204.105,-2.52276)
+
 // Simple example of reading a generated Root file
-int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
+int WCSim_Bonsai_Ana(const char *filedirectory=NULL, bool verbose=false)
 {
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,13 +97,13 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
   //TODO: make the tree entry into a class, so we can easily friend the trees and grab the entry
   // as an object. Maybe use MakeClass to implement this.
   TFile* fileout = new TFile("bonsaiout.root","RECREATE");
-  TTree* treeout = new TTree("bonsaitreeout","Bonsai Reconstruction Tree");
+  TTree* treeout = new TTree("bonsaitree","Bonsai Reconstruction Tree");
   // Info to locate the event
-  std::string wcsimfile;
+  std::string wcsimfilepath;
   Int_t run_id;
   Int_t event_id;
   Int_t subtrigger;
-  TBranch* bWCSimFile = treeout->Branch("WCSim_File",&wcsimfile);
+  TBranch* bWCSimFile = treeout->Branch("WCSim_File",&wcsimfilepath);
   TBranch* bRunId = treeout->Branch("RunId",&run_id);
   TBranch* bEventId = treeout->Branch("EventId",&event_id);
   TBranch* bSubtriggerId = treeout->Branch("SubtriggerId",&subtrigger);
@@ -116,7 +129,7 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
   TBranch* bRecoVtx_X = treeout->Branch("RecoVtx_X",&Reco_Vertex_X);
   TBranch* bRecoVtx_Y = treeout->Branch("RecoVtx_Y",&Reco_Vertex_Y);
   TBranch* bRecoVtx_Z = treeout->Branch("RecoVtx_Z",&Reco_Vertex_Z);
-  TBranch* bRecoVtx_T = treeout->Branch("RecoVtx_Z",&Reco_Vertex_T);
+  TBranch* bRecoVtx_T = treeout->Branch("RecoVtx_T",&Reco_Vertex_T);
   TBranch* bRecoVtx_R = treeout->Branch("RecoVtx_R",&Reco_Vertex_R);
   TVector3 Reco_Vertex_Vec;
   TBranch* bRecoVtx_Vec = treeout->Branch("RecoVtx_Vec",&Reco_Vertex_Vec);
@@ -151,6 +164,8 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
   TBranch* bRecoDir_Ellipticity = treeout->Branch("RecoDir_Ellipticity",&Reco_Dir_Ellip);
   TVector3 Reco_Dir_Vec;
   TBranch* bRecoDir_Vec = treeout->Branch("RecoDir_Vec",&Reco_Dir_Vec);
+  double RecoDir_Error;
+  TBranch* bRecoDir_Error = treeout->Branch("RecoDir_Error",&RecoDir_Error);
   double Dir_Diff_X, Dir_Diff_Y, Dir_Diff_Z, Dir_Diff_AngMag;
   TBranch* bDirDiff_X = treeout->Branch("DirDiff_X",&Dir_Diff_X);
   TBranch* bDirDiff_Y = treeout->Branch("DirDiff_Y",&Dir_Diff_Y);
@@ -162,23 +177,18 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
   TBranch* bFittingTime = treeout->Branch("Fitting_Time",&fittingtime);
   std::vector<double> numusedhits;
   TBranch* bNumUsedHits = treeout->Branch("NHitsUsedForFit",&numusedhits);
-  // Track Matching for WCSim - at actual tank exit
   TVector3 tankexitpoint;
   TBranch* bTankExitPoint = treeout->Branch("Tank_Exit_Point",&tankexitpoint);
-  // at Z = downstream tank radius
-  std::pair<double,double> tankexitxbounds, tankexitybounds;
-  TBranch* bTankExitBounds_X = treeout->Branch("TankExitBounds_X",&tankexitxbounds);
-  TBranch* bTankExitBounds_Y = treeout->Branch("TankExitBounds_Y",&tankexitybounds);
   double tracklengthintank;
   TBranch* bTrackLengthInTank = treeout->Branch("TrackLengthInTank",&tracklengthintank);
-  // at MRD front face
+  double tankenergyloss;
+  TBranch* bTankEnergyLoss = treeout->Branch("TankEnergyLoss",&tankenergyloss);
+  double tankenergylosserror;
+  TBranch* bTankEnergyLossError = treeout->Branch("TankEnergyLossError",&tankenergylosserror);
   bool mrdintercept;
-  TBranch* bMrdIntercept = treeout->Branch("MRD_Intercept",&mrdintercept);
+  TBranch* bMrdIntercept = treeout->Branch("Intercepts_MRD",&mrdintercept);
   TVector3 projectedmrdentrypoint;
   TBranch* bMrdEntryPoint = treeout->Branch("Projected_MRDEntry",&projectedmrdentrypoint);
-  std::pair<double,double> mrdentryxbounds, mrdentryybounds, mrdentryzbounds;
-  TBranch* bMrdEntryBounds_X = treeout->Branch("MrdEntryBounds_X",&mrdentryxbounds);
-  TBranch* bMrdEntryBounds_Y = treeout->Branch("MrdEntryBounds_Y",&mrdentryybounds);
   Int_t MrdTrackId;
   TBranch* bMrdTrackId = treeout->Branch("MrdTrackId",&MrdTrackId);
   
@@ -236,67 +246,98 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
 //////////////////////////////////////////////////////////////////////////////////////////////
 // Load File and Tree
 //////////////////////////////////////////////////////////////////////////////////////////////
-  
   gROOT->cd();
+  // Declare input paths, files, trees...
+  TFile* wcsimfile=0;
+  TString wcsimfilename, wcsimfilestring;
+  TTree* wcsimT=0;
+  
+  // TChain for wcsim files
+  TChain* c =  new TChain("wcsimT");
+  TString chainpattern = TString::Format("%s/wcsim_0.1000.root",filedirectory); // FIXME FIXME FIXME FIXME FIXME
+  //TString chainpattern = TString::Format("%s/wcsim_10MeV_iso_e_wDN_Multidigit_16-04-17.root",filedirectory);
+  
+  cout<<"loading TChain entries from "<<chainpattern<<endl;
+  c->Add(chainpattern);
+  Int_t nevent = c->GetEntries();
+  cout<<"loaded "<<nevent<<" entries in the chain"<<endl;
+  if(nevent<1){ return -9; }
+  
+  // wcsimT
+  WCSimRootEvent* wcsimrootsuperevent=0, *m=0, *v=0;
+  TBranch* bp=0, *mp=0, *vp=0;
+  WCSimRootTrigger* wcsimrootevent=0, *atrigm=0, *atrigv=0;
+  WCSimRootGeom* geo = 0; 
+  int numpmts;
+  
+  cout<<"loading first wcsimT tree from "<<chainpattern<<" tchain"<<endl;
+  c->LoadTree(0);
+  Int_t treeNumber = -1;
+  wcsimT = c->GetTree();
+  Int_t thistreesentries = wcsimT->GetEntries();
+  cout<<thistreesentries<<" entries in the first tree"<<endl;
   
   WCSimBonsai* bonsai = new WCSimBonsai();
-  
-  TFile *file;
-  // Open the file
-  if (filename==NULL){
-    file = new TFile("../wcsim.root","read");
-  }else{
-    file = new TFile(filename,"read");
-  }
-  if (!file->IsOpen()){
-    std::cout << "Error, could not open input file: " << filename << std::endl;
-    return -1;
-  }
-  
-  // Get the a pointer to the tree from the file
-  TTree *tree = (TTree*)file->Get("wcsimT");
-  
-  // Get the number of events
-  int nevent = tree->GetEntries();
-  if(verbose) printf("nevent %d\n",nevent);
-  
-  // Create a WCSimRootEvent to put stuff from the tree in
-  WCSimRootEvent* wcsimrootsuperevent = new WCSimRootEvent();
-  
-  // Set the branch address for reading from the tree
-  TBranch *branch = tree->GetBranch("wcsimrootevent");
-  branch->SetAddress(&wcsimrootsuperevent);
-  
-  // Force deletion to prevent memory leak 
-  tree->GetBranch("wcsimrootevent")->SetAutoDelete(kTRUE);
-  
-  // Geometry tree - only need 1 "event"
-  TTree *geotree = (TTree*)file->Get("wcsimGeoT");
-  WCSimRootGeom *geo = 0; 
-  geotree->SetBranchAddress("wcsimrootgeom", &geo);
-  if(verbose) std::cout << "Geotree has " << geotree->GetEntries() << " entries" << std::endl;
-  if (geotree->GetEntries() == 0) {
-    exit(9);
-  }
-  geotree->GetEntry(0);
-  bonsai->Init(geo);
-  int numpmts = geo->GetWCNumPMT();
-  
-  // start with the main "subevent", as it contains most of the info and always exists.
-  WCSimRootTrigger* wcsimrootevent;
   
 //////////////////////////////////////////////////////////////////////////////////////////////
 // BEGIN LOOP OVER EVENTS
 //////////////////////////////////////////////////////////////////////////////////////////////
   // Now loop over events
-  nevent=500;
+  //nevent=10;
   int numsuccessfulfits=0, numfailedfits=0, numskippedevents=0;
 #ifdef VERBOSE
   cout<<nevent<<" events to analyze"<<endl;
 #endif
   for (int ev=0; ev<nevent; ev++){
+  
+#ifdef VERBOSE
+    cout<<"loading entry "<<ev<<endl;
+#endif
+    Long64_t localEntry = c->LoadTree(ev);
+    if( localEntry<0){ cout<<"end of tchain"<<endl; break; }
+    Int_t nextTreeNumber = c->GetTreeNumber();
+    if(treeNumber!=nextTreeNumber){
+      cout<<"new tree: "<<nextTreeNumber<<endl;
+      // this means we've switched file - need to load the new branch addresses (and potentially other trees)
+      // first pull out the new file name
+      wcsimT = c->GetTree();
+      wcsimfile = wcsimT->GetCurrentFile();
+      wcsimfilename=wcsimfile->GetName();
+      wcsimfilestring=wcsimfilename+std::string(filedirectory);
+      Int_t thistreesentries = wcsimT->GetEntries();
+      cout<<"wcsimT has "<<thistreesentries<<" entries in this file"<<endl;
+  
+      // load the geometry tree and grab the geometry if we haven't already
+      if(geo==0){
+        TString geofileloc = TString::Format("%s/../wcsim_wdirt_17-06-17/wcsim_0.1000.root",filedirectory);
+        TFile* f = TFile::Open(geofileloc.Data());
+        TTree* geotree = (TTree*)wcsimfile->Get("wcsimGeoT");
+        if(geotree==0){ cout<<"NO GEOMETRY IN FIRST FILE?"<<endl; assert(false); }
+        geotree->SetBranchAddress("wcsimrootgeom", &geo);
+        if (geotree->GetEntries() == 0) { cout<<"geotree has no entries!"<<endl; exit(9); }
+        geotree->GetEntry(0);
+        bonsai->Init(geo);
+        numpmts = geo->GetWCNumPMT();
+        // pmtidtocopynum = makecopynummap(geo); // turns out this is a 1:1 mapping after all!
+        //MakePMTmap(geo, topcappositionmap, bottomcappositionmap, wallpositionmap);
+      }
+  
+      // wcsim trigger classes
+      wcsimT->SetBranchAddress("wcsimrootevent",&wcsimrootsuperevent, &bp);
+      //wcsimT->SetBranchAddress("wcsimrootevent_mrd",&m, &mp);
+      //wcsimT->SetBranchAddress("wcsimrootevent_facc",&v, &vp);
+      bp->SetAutoDelete(kTRUE);
+      //mp->SetAutoDelete(kTRUE);
+      //vp->SetAutoDelete(kTRUE);
+      if(bp==0/*||mp==0||vp==0*/){ cout<<"branches are zombies!"<<endl; }
+  
+      treeNumber=nextTreeNumber;
+    }
+  
+   //////////////////////////////
+   
     // Read the event from the tree into the WCSimRootEvent instance
-    tree->GetEntry(ev);
+    wcsimT->GetEntry(ev);
     wcsimrootevent = wcsimrootsuperevent->GetTrigger(0);
     if(verbose){
       printf("********************************************************");
@@ -401,7 +442,10 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
     int bsnsel[2]; //nsel (SLE)
     if(verbose) std::cout << "DIGITIZED HITS:" << std::endl;
     int ncherenkovdigihits = wcsimrootevent->GetNcherenkovdigihits();
-    for (int index = 0 ; index < wcsimrootsuperevent->GetNumberOfEvents(); index++){
+    for (int index = 0 ; index < 1 /*wcsimrootsuperevent->GetNumberOfEvents()*/; index++){
+    // TODO: for tree entries to tie up with WCSim etc, we need one entry per WCSim event
+    // disable analysis of delayed triggers until the class supports multiple triggers
+    // in one tree entry
       wcsimrootevent = wcsimrootsuperevent->GetTrigger(index);
       if(verbose) std::cout << "Sub event number = " << index << "\n";
       
@@ -500,6 +544,7 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
         Reco_Dir_X = (vertexfound) ? Reco_Dir_Vec.X() : 0;
         Reco_Dir_Y = (vertexfound) ? Reco_Dir_Vec.Z() : 0;
         Reco_Dir_Z = (vertexfound) ? Reco_Dir_Vec.Y() : 0;
+        RecoDir_Error = (vertexfound) ? TMath::Pi()/4. : 0.; // TODO figure out how to calculate this !!
         
         // Direction error
         Dir_Diff_X = (vertexfound) ? True_Dir_X-Reco_Dir_X : 0;
@@ -508,7 +553,6 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
         Dir_Diff_AngMag = (vertexfound) ? TMath::ACos((Reco_Dir_Vec.Unit()).Dot(True_Dir_Vec.Unit())) : 0;
         
         // Other event info
-        success=vertexfound;
         vertexintank = (vertexfound) ? 
           ((Reco_Vertex_R<tank_radius)&&(abs(Reco_Vertex_Y-tank_yoffset)<tank_halfheight)) : false;
         numdigitsthisevent=ncherenkovdigihits;
@@ -565,13 +609,15 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
         //TODO tankexitxbounds, tankexitybounds;
         //     how to calculate these, as we have no error on fit vtx/dir?
         
-        // Project toward the MRD for matching later
+        // TODO: above calculates track length in tank. Derive energy loss from this, or from charge deposition
+        tankenergyloss=tracklengthintank*2.5; // nominally 2.5MeV/cm
+        tankenergylosserror=50.;  //TODO: base on length error, rate error
+                                  // OR redo this based on charge deposition fit fit error
         if(vertexfound){
           double mrdentryx = Reco_Vertex_X+((Reco_Dir_X/Reco_Dir_Z)*(MRD_start-(Reco_Vertex_Z+tank_start+tank_radius)));
           double mrdentryy = Reco_Vertex_Y+((Reco_Dir_Y/Reco_Dir_Z)*(MRD_start-(Reco_Vertex_Z+tank_start+tank_radius)));
           projectedmrdentrypoint=TVector3(mrdentryx,mrdentryy,MRD_start);
           mrdintercept = ((abs(mrdentryx)<MRD_width)&&(abs(mrdentryy)<MRD_height));
-          //TODO mrdentryxbounds, mrdentryybounds;
         } else {
           projectedmrdentrypoint=TVector3(0.,0.,0.);
           mrdintercept=false;
@@ -581,7 +627,7 @@ int WCSim_Bonsai_Ana(const char *filename=NULL, bool verbose=false)
         MrdTrackId = -1;
         
         // Set any remaining variables
-        wcsimfile = std::string(filename);
+        wcsimfilepath = wcsimfilestring;
         run_id = wcsimrootevent->GetHeader()->GetRun();
         event_id = ev;
         Int_t subtrigger= index;
