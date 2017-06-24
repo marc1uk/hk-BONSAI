@@ -9,7 +9,7 @@
 
 class timefit
 {
-  short    int bgfit;
+  int bgfit;
   unsigned int nlike,*offset,*nneg,*lmax;
   unsigned int *loglike,*time_histo;
   float        *qminmax,*pdf,*pdf_sum,*pdf_max;
