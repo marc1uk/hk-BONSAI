@@ -142,15 +142,39 @@ int main(int argc,char **argv)
 		}
 		/*Surface detector*/
 		else if (j==8){
-                   dx=(i*TBIN/-1.76557);
-                   dhisto[i+nneg]+=1*exp(-0.5*dx*dx); 
-                   if (x<=-1.5)
-                   {
-                     dhisto[i+nneg]+=0.0691864*exp(0.0616537*x); 
-                     double dx2=(x+-8.27888)/14.0146;
-                     dhisto[i+nneg]+=-0.035261*exp(-0.5*dx2*dx2);
-                   }
-                }
+			dx=(i*TBIN/-1.76557);
+				dhisto[i+nneg]+=1*exp(-0.5*dx*dx); 
+			if (x<=-1.5)
+			{
+				dhisto[i+nneg]+=0.0691864*exp(0.0616537*x); 
+				double dx2=(x+-8.27888)/14.0146;
+				dhisto[i+nneg]+=-0.035261*exp(-0.5*dx2*dx2);
+			}
+		}
+		/* annie */
+		else if (j==9){
+		// XXX XXX    MAKE SURE THE FORM OF THIS PRINTED IN ANALYSIS_NEW.C   XXX XXX
+		// XXX ACTUALLY REPRESENTS THE EXPRESSION AND ALL PARAMETERS OF YOUR FIT XXX
+//			// ? which version of wcsim?
+//			dx=(i*TBIN/1.77643 );
+//			if (x>-1.5) 
+//				dhisto[i+nneg]+=1*exp(-0.5*dx*dx); 
+//			if (x<=-1.5) 
+//			{ 
+//				dhisto[i+nneg]+=0.118287*exp(0.165719*x); 
+//				dhisto[i+nneg]+=1.32152*exp(1.10514*x); 
+//				dhisto[i+nneg]+=3.80723e-48*exp(0.75*x); 
+//			}
+			// version with 180 LAPPDs and 180 PMTs
+			dx=(i*TBIN/-1.7665 );
+			if (x>-1.5)
+				dhisto[i+nneg]+=1*exp(-0.5*dx*dx); 
+			if (x<=-1.5)
+			{
+				dhisto[i+nneg]+=1.35909*exp(1.08836*x); 
+				dhisto[i+nneg]+=0.111633*exp(0.170502*x); 
+			}
+		}
 	}
 	sizes[0]=4;
 	sizes[1]=4;
@@ -171,3 +195,20 @@ int main(int argc,char **argv)
 	//  printf("%u\n",histo[i]);
 	bf.write(sizes,numbers,starts);
 }
+
+Double_t combinedfunc(Double_t* x, Double_t* par){
+	// COPY THIS TEXT FROM ANALYSIS_NEW TO SET PARAMETERS:
+	
+	// crossover point - upper limit of landaugaus fitrange used in analysis_new.C
+	static double crossover = -5;
+	// landaugaus parameters printed following fit:
+	static std::vector<double> fit_vals{1.,2.,3.,4.};
+	
+	// printed expression for the exponential part of the fit, including parameters
+	
+	// END OF COPY SECTION
+	
+	if((*x)<par[6]) return langaufun(x, par);
+	return exp(par[4]+par[5]*(*x));
+}
+

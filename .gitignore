@@ -25,3 +25,6 @@ bonsaiout.root
 #gedit backups
 *~
 
+# createlike build products
+createlike/create_like
+createlike/showlike
