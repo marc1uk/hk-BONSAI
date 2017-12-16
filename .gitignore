@@ -11,6 +11,9 @@ rootbonsai/rootbonsai_C.d
 rootbonsai/rootbonsai_C.so
 rootbonsai/rootbonsai_C_ACLiC_dict_rdict.pcm
 sample-root-scripts/sample_bonsai_C_ACLiC_dict_rdict.pcm
+*.pcm
+*.so
+*.d
 
 #macro running
 sample-root-scripts/*_C.d
@@ -21,3 +24,4 @@ bonsaiout.root
 
 #gedit backups
 *~
+
