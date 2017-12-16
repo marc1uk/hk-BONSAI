@@ -1,7 +1,12 @@
+/* vim:set noexpandtab tabstop=2 wrap */
 //C++
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h> // for stat() test to see if file or folder
+#include <sys/stat.h>
+#include <unistd.h>
+#include <math.h>
 //ROOT
 #include <TH1F.h>
 #include <TF1.h>
@@ -24,7 +29,6 @@
 #include <TRint.h>
 #include <TColor.h>
 #include <TString.h>
-#include <math.h>
 //#include "../gitver/Bonsai_v0/bonsai/pmt_geometry.h"
 //#include "../gitver/Bonsai_v0/bonsai/likelihood.h"
 //#include "../gitver/Bonsai_v0/bonsai/goodness.h"
@@ -42,12 +46,12 @@
 //#define VERBOSE 1
 #endif
 
-void GetTankExitPoint(const TVector3 RecoVtx_Vec, const TVector3 RecoDir_Vec, TVector3 &projectedinterceptpoint, double &tracklengthintank);
+namespace {
+    constexpr double BOGUS_DOUBLE = std::numeric_limits<double>::max();
+    constexpr double BOGUS_FLOAT = std::numeric_limits<float>::max();
+}
 
-const Float_t tank_start = 15.70;          // front face of the tank in cm
-const Float_t tank_radius = 152.4;         // tank radius in cm
-const Float_t tank_halfheight = 198.;      // tank half height in cm
-const Float_t tank_yoffset = -14.46;       // tank y offset in cm
+void GetTankExitPoint(const TVector3 RecoVtx_Vec, const TVector3 RecoDir_Vec, TVector3 &projectedinterceptpoint, double &tracklengthintank);
 
 //const double miploss = 2.5;
 //const double ecorroffset = 204.105;
@@ -252,10 +256,32 @@ int WCSim_Bonsai_Ana(const char *filedirectory=NULL, bool verbose=false)
   TString wcsimfilename, wcsimfilestring;
   TTree* wcsimT=0;
   
+  // first check if the path we've been given is a file or folder
+  bool isdir, addsubfolders=true;
+  struct stat s;
+  if(stat(filedirectory,&s)==0){
+    if(s.st_mode & S_IFDIR){        // mask to extract if it's a directory?? how does this work?
+      isdir=true;  //it's a directory
+    } else if(s.st_mode & S_IFREG){ // mask to check if it's a file??
+      isdir=false; //it's a file
+    } else {
+      assert(false&&"Check input path: stat says it's neither file nor directory..?");
+    }
+  } else {
+    //assert(false&&"stat failed on input path! Is it valid?"); // error
+    // errors could be because this is a file pattern: e.g. wcsim_0.4*.root Treat as a file.
+    isdir=false;
+  }
+  
   // TChain for wcsim files
   TChain* c =  new TChain("wcsimT");
-  TString chainpattern = TString::Format("%s/wcsim_0.1000.root",filedirectory); // FIXME FIXME FIXME FIXME FIXME
-  //TString chainpattern = TString::Format("%s/wcsim_10MeV_iso_e_wDN_Multidigit_16-04-17.root",filedirectory);
+  TString chainpattern;
+  if(isdir){
+    chainpattern = TString::Format("%s/wcsim_0.*.root",filedirectory);
+    //TString chainpattern = TString::Format("%s/wcsim_10MeV_iso_e_wDN_Multidigit_16-04-17.root",filedirectory);
+  } else {
+    chainpattern = filedirectory;
+  }
   
   cout<<"loading TChain entries from "<<chainpattern<<endl;
   c->Add(chainpattern);
@@ -309,14 +335,17 @@ int WCSim_Bonsai_Ana(const char *filedirectory=NULL, bool verbose=false)
   
       // load the geometry tree and grab the geometry if we haven't already
       if(geo==0){
-        TString geofileloc = TString::Format("%s/../wcsim_wdirt_17-06-17/wcsim_0.1000.root",filedirectory);
-        TFile* f = TFile::Open(geofileloc.Data());
-        TTree* geotree = (TTree*)wcsimfile->Get("wcsimGeoT");
+//        TString geofileloc = TString::Format("%s/../wcsim_wdirt_17-06-17/wcsim_0.1000.root",filedirectory);
+//        TString geofileloc = "/home/marc/LinuxSystemFiles/Bonsai/gitver/Bonsai_v0/wcsim_0.1001.root";
+//        TFile* geofile = TFile::Open(geofileloc.Data());
+        TFile* geofile = wcsimfile;
+        if(geofile==nullptr) assert(false&&"geofile doesn't exist!");
+        TTree* geotree = (TTree*)geofile->Get("wcsimGeoT");
         if(geotree==0){ cout<<"NO GEOMETRY IN FIRST FILE?"<<endl; assert(false); }
         geotree->SetBranchAddress("wcsimrootgeom", &geo);
         if (geotree->GetEntries() == 0) { cout<<"geotree has no entries!"<<endl; exit(9); }
         geotree->GetEntry(0);
-        bonsai->Init(geo);
+        bonsai->Init(geo, isANNIE);
         numpmts = geo->GetWCNumPMT();
         // pmtidtocopynum = makecopynummap(geo); // turns out this is a 1:1 mapping after all!
         //MakePMTmap(geo, topcappositionmap, bottomcappositionmap, wallpositionmap);
@@ -388,7 +417,7 @@ int WCSim_Bonsai_Ana(const char *filedirectory=NULL, bool verbose=false)
 #ifdef VERBOSE
     cout<<"mu found"<<endl;
 #endif
-    if(mutrackindex<0) {continue; numskippedevents++;}// this event had no muons!
+    if(mutrackindex<0) {numskippedevents++; continue;}// this event had no muons!
     cout<<"✩ ";
     if(verbose){
       printf("Vtxvol %d\n", wcsimrootevent->GetVtxvol());
@@ -450,6 +479,9 @@ int WCSim_Bonsai_Ana(const char *filedirectory=NULL, bool verbose=false)
       if(verbose) std::cout << "Sub event number = " << index << "\n";
       
       int ncherenkovdigihits = wcsimrootevent->GetNcherenkovdigihits();
+//      cout<<"numtruehits = "<<wcsimrootevent->GetCherenkovHits()->GetEntries()
+//          <<", numdigits = "<<wcsimrootevent->GetCherenkovDigiHits()->GetEntries()<<endl;
+      if(ncherenkovdigihits==0) continue;
       if(verbose) printf("Ncherenkovdigihits %d\n", ncherenkovdigihits);
       bsnhit[0] = ncherenkovdigihits;
 #ifdef VERBOSE
@@ -477,7 +509,23 @@ int WCSim_Bonsai_Ana(const char *filedirectory=NULL, bool verbose=false)
 #endif
       TStopwatch* ms = new TStopwatch();
       ms->Start();
+//      cout<<"calling BonsaiFit with 500 bsCAB: {";
+//      for(int i=0; i<500; i++) cout<<bsCAB[i]<<", ";
+//      cout<<"}"<<endl<<"bsT: {";
+//      for(int i=0; i<500; i++) cout<<bsT[i]<<", ";
+//      cout<<"}"<<endl<<"bsQ: {";
+//      for(int i=0; i<500; i++) cout<<bsQ[i]<<", ";
+//      cout<<"}"<<endl;
       vertexfound = bonsai->BonsaiFit( bsvertex, bsresult, bsgood, bsnsel, bsnhit, bsCAB, bsT, bsQ);
+//      cout<<"bonsaifit result is:"<<endl<<"bsVertex: {";
+//      for(int i=0; i<4; i++) cout<<bsvertex[i]<<", ";
+//      cout<<"}"<<endl<<"bsResult: {";
+//      for(int i=0; i<5; i++) cout<<bsresult[i]<<", ";
+//      cout<<"}"<<endl<<"bsGood: {";
+//      for(int i=0; i<3; i++) cout<<bsgood[i]<<", ";
+//      cout<<"}"<<endl<<"bsNsel: {";
+//      for(int i=0; i<2; i++) cout<<bsnsel[i]<<", ";
+//      cout<<"}"<<endl<<"bsnhit: "<<*bsnhit<<endl;
       ms->Stop();
       fittingtime = ms->CpuTime();
       numusedhits.clear();
@@ -918,7 +966,16 @@ int WCSim_Bonsai_Ana(const char *filedirectory=NULL, bool verbose=false)
   return 0;
 }
 
-void GetTankExitPoint(const TVector3 RecoVtx_Vec, const TVector3 RecoDir_Vec, TVector3 &projectedinterceptpoint, double &tracklengthintank){  // NOTE: TANK IS CENTRED ON (0,0,0) FOR RECONSTRUCTED VERTEX
+void GetTankExitPoint(const TVector3 RecoVtx_Vec, const TVector3 RecoDir_Vec, TVector3 &projectedinterceptpoint, double &tracklengthintank){
+  // NOTE: TANK IS CENTRED ON (0,0,0) FOR RECONSTRUCTED VERTEX
+  
+  if( (abs(RecoVtx_Vec.X())>tank_radius) || (abs(RecoVtx_Vec.Z())>tank_radius) ||
+      (sqrt(pow(RecoVtx_Vec.X(),2.)+pow(RecoVtx_Vec.Z(),2.))>tank_radius) ||
+      (abs(RecoVtx_Vec.Y())>tank_halfheight) ){
+      projectedinterceptpoint = TVector3(BOGUS_FLOAT,BOGUS_FLOAT,BOGUS_FLOAT);
+      tracklengthintank = BOGUS_DOUBLE;
+      return; // not gonna intercept the tank if it's already out it.
+  }
   double trackgradx = RecoDir_Vec.X()/RecoDir_Vec.Z();
   double trackgrady = RecoDir_Vec.Y()/RecoDir_Vec.Z();
   double xatziszero = RecoVtx_Vec.X() - ((RecoVtx_Vec.Z())*(trackgradx));
@@ -935,9 +992,10 @@ void GetTankExitPoint(const TVector3 RecoVtx_Vec, const TVector3 RecoDir_Vec, TV
     cerr<<"failure of vertex reconstruction! Reconstructed track does not project to intercept tank radius!"<<endl;
     cerr<<"RecoVec is ("<<RecoVtx_Vec.X()<<", "<<RecoVtx_Vec.Y()<<", "<<RecoVtx_Vec.Z()<<")"<<endl;
     cerr<<"RecoDir is ("<<RecoDir_Vec.X()<<", "<<RecoDir_Vec.Y()<<", "<<RecoDir_Vec.Z()<<")"<<endl;
+    cerr<<"Tank radius: "<<tank_radius<<", tank halfheight: "<<tank_halfheight<<endl;
     projectedinterceptpoint=TVector3(0.,0.,0.);
     tracklengthintank=0.;
-    return;
+    assert(false);
   }
   double solution1 = (firstterm + TMath::Sqrt(secondterm))/thirdterm;
   double solution2 = (firstterm - TMath::Sqrt(secondterm))/thirdterm;
@@ -954,9 +1012,9 @@ void GetTankExitPoint(const TVector3 RecoVtx_Vec, const TVector3 RecoDir_Vec, TV
   double tankendpointz1=tankendpointz;
   double tankendpointy1=tankendpointy;
   double distanceoutsidecap =TMath::Abs(tankendpointy)-(tank_halfheight);
-  if(distanceoutsidecap>0){
+  if(distanceoutsidecap>0 && TMath::Abs(RecoVtx_Vec.Y())<(tank_halfheight)){
     // this trajectory exits through the cap. Need to recalculate x, z exiting points...!
-    if(tankendpointy>tank_halfheight){
+    if(tankendpointy>RecoDir_Vec.Y()>0){
       tankendpointy = tank_halfheight;  // by definition of leaving through cap
     } else {
       tankendpointy = -tank_halfheight;
@@ -984,14 +1042,15 @@ void GetTankExitPoint(const TVector3 RecoVtx_Vec, const TVector3 RecoDir_Vec, TV
     tankendpointz=tankendpointz1;
     }
   }
-  // correct for tank y,z offset
-  tankendpointz += tank_start+tank_radius;
-  tankendpointy += tank_yoffset;
-  projectedinterceptpoint=TVector3(tankendpointx,tankendpointy,tankendpointz);
   
   // we're now able to determine muon track length in the tank:
   tracklengthintank = TMath::Sqrt(
     TMath::Power((tankendpointx-RecoVtx_Vec.X()),2)+
     TMath::Power((tankendpointy-RecoVtx_Vec.Y()),2)+
     TMath::Power((tankendpointz-RecoVtx_Vec.Z()),2) );
+    
+  // correct for tank y,z offset
+  tankendpointz += tank_start+tank_radius;
+  tankendpointy += tank_yoffset;
+  projectedinterceptpoint=TVector3(tankendpointx,tankendpointy,tankendpointz);
 }
