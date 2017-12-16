@@ -46,9 +46,11 @@ WCSimBonsai::~WCSimBonsai()
 	delete(geom_root);
 }
 
-Int_t WCSimBonsai::Init(WCSimRootGeom *fGeo){
+Int_t WCSimBonsai::Init(WCSimRootGeom *fGeo, bool swapYandZ=false){
 
-bool isANNIE=true;
+//TODO use fOrientation from fGeo to avoid the need for this. Right now it's not properly set in WCSim though
+// n.b it's set to 0 in the RunAction ...?
+// other consideraitons: use fgeo_type (an int) to set detector-specific configurations.
 
 		int fNPMT = fGeo->GetWCNumPMT();
 		// fill the arrays of geometry info
@@ -63,25 +65,21 @@ bool isANNIE=true;
 			//std::cout<<"<WCSimBonsai::ReadGeom> ipmt="<<ipmt<<" tubeno="<<pmt.GetTubeNo()<<std::endl;
 
 //PMT geometory array for bonsai. T. Yano
-			if(isANNIE){
+			if(swapYandZ){
 			// TANK ORIENTATION IS DIFFERENT SO SWAP AROUND INDICES.
 			// TANK IS ALSO OFFSET FROM (0,0,0): tank -152<X<152, -212<Y<183, 15<Z<320 cm
-			const Float_t tank_start = 15.70;          // front face of the tank in cm
-			const Float_t tank_radius = 152.4;         // tank radius in cm
-			const Float_t tank_halfheight = 198.;      // tank half height in cm
-			const Float_t tank_yoffset = -14.46;       // tank y offset in cm
-			pmt_array.pmt_position[ipmt][0] = pmt.GetPosition(0)-fGeo->GetWCOffset(0);
-			pmt_array.pmt_position[ipmt][2] = pmt.GetPosition(1)-fGeo->GetWCOffset(1);
-			pmt_array.pmt_position[ipmt][1] = pmt.GetPosition(2)-fGeo->GetWCOffset(2);
+			pmt_array.pmt_position[ipmt][0] = pmt.GetPosition(0)-fGeo->GetWCOffset(0); // x
+			pmt_array.pmt_position[ipmt][2] = pmt.GetPosition(1)-fGeo->GetWCOffset(1); // y
+			pmt_array.pmt_position[ipmt][1] = pmt.GetPosition(2)-fGeo->GetWCOffset(2); // z
 			pmt_array.pmt_direction[ipmt][0] = pmt.GetOrientation(0);
 			pmt_array.pmt_direction[ipmt][2] = pmt.GetOrientation(1);
 			pmt_array.pmt_direction[ipmt][1] = pmt.GetOrientation(2);
 			pmt_array.pmt_r[ipmt] = 
 			TMath::Sqrt( TMath::Power(pmt.GetPosition(0)-fGeo->GetWCOffset(0),2) + TMath::Power(pmt.GetPosition(2)-fGeo->GetWCOffset(2),2) );
 			} else {
-			pmt_array.pmt_position[ipmt][0] = pmt.GetPosition(0);
-			pmt_array.pmt_position[ipmt][1] = pmt.GetPosition(1);
-			pmt_array.pmt_position[ipmt][2] = pmt.GetPosition(2);
+			pmt_array.pmt_position[ipmt][0] = pmt.GetPosition(0)-fGeo->GetWCOffset(0);
+			pmt_array.pmt_position[ipmt][1] = pmt.GetPosition(1)-fGeo->GetWCOffset(1);
+			pmt_array.pmt_position[ipmt][2] = pmt.GetPosition(2)-fGeo->GetWCOffset(2);
 			pmt_array.pmt_direction[ipmt][0] = pmt.GetOrientation(0);
 			pmt_array.pmt_direction[ipmt][1] = pmt.GetOrientation(1);
 			pmt_array.pmt_direction[ipmt][2] = pmt.GetOrientation(2);

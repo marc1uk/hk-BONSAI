@@ -28,7 +28,7 @@ public:
 
   // Sets and gets
 
-  Int_t Init(WCSimRootGeom *fGeo);
+  Int_t Init(WCSimRootGeom *fGeo, bool swapYandZ);
   Int_t BonsaiFit(float *vert,float *result,float *maxlike,int *nsel,
 		             int *nhit,int *cab,float *t,float *q);
 
