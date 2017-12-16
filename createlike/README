@@ -1,0 +1,17 @@
+a. You need to make a T-TOF fit function.
+  1. Create a WCSim MC, in which you don't have dark-rate or "Timewalk".
+     Here, "Timewalk" means a triggering effect to delay the trigger time due to the number of hits.
+     i.e. You have to make a special version of WCSim, by removing TriggerTiems an offset on digihittime:
+>> WCSimWCDigitizer.cc, Line ~431
+> G4double digihittime =
+> //-TriggerTimes[G]
+> //+ WCSimWCDigitizer::offset
+> //+ 
+> firstHitTime
+> + hittimesmearing;
+  2. To Copy the ouput root file to the "analysis_wcsim" dir here.
+     To Edit analysis.C and fit your new output file.
+	 New fit function to reproduce T-TOF function will be generated.
+
+  3. To make a new case branch in create_like.cc.
+     Output bin file could be used as a likelihood function.

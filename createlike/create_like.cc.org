@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <math.h>
+#include "binfile.h"
+
+#define FOURLOG10 9.2103404
+#define TBIN 0.4
+
+int main(int argc,char **argv)
+{
+	float qmin=-1;
+	unsigned int nlike=1;
+	unsigned int nneg=150;
+	unsigned int bglike=1;
+
+	unsigned int nbin=225;
+	double dx,dhisto[225];//={1.0001e-4,6.31e-4,3.981e-3,.02512,.1585,1,.3981,.1585,.0631,.02512,0.01};
+	unsigned int histo[225];
+	binfile      bf(argv[1],'w');
+	void         *starts[2];
+	int          sizes[3];
+	int          numbers[3];
+	unsigned int array[3];
+	int i;
+
+	for(i=-((int) nneg); i<((int) nbin)-((int) nneg); i++)
+	{
+		dx=(i*TBIN/3.15);
+		if (dx*dx>20)
+			dhisto[i+nneg]=1.0001e-4;
+		else
+			dhisto[i+nneg]=0.99*exp(-0.5*dx*dx)+1.0001e-4;
+		dx=(i*TBIN+15)/9;
+		if (dx*dx<20)
+			dhisto[i+nneg]+=0.03*exp(-0.5*dx*dx);
+		dx=(i*TBIN+40)/8;
+		if (dx*dx<20)
+			dhisto[i+nneg]+=0.003*exp(-0.5*dx*dx);
+	}
+	sizes[0]=4;
+	sizes[1]=4;
+	sizes[2]=-1;
+	numbers[0]=3;
+	numbers[1]=nbin;
+	numbers[2]=-1;
+	starts[0]=array;
+	starts[1]=histo;
+
+	array[0]=nlike;
+	array[1]=nneg;
+	((float *)starts[0])[2]=qmin;
+
+	for(i=0; i<numbers[1]; i++)
+		histo[i]=(unsigned int) (1e5*(1+0.25*log(dhisto[i])/log(10))+0.5);
+	//for(i=0; i<numbers[1]; i++)
+	//  printf("%u\n",histo[i]);
+	bf.write(sizes,numbers,starts);
+}
