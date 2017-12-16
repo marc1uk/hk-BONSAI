@@ -2,6 +2,7 @@
 #include <iostream>
 #include <math.h>
 #include "binfile.h"
+#include <stdlib.h>
 
 #define FOURLOG10 9.2103404
 #define TBIN 0.4
@@ -139,6 +140,17 @@ int main(int argc,char **argv)
 				dhisto[i+nneg]+=0.0206105*exp(0.0102117*x);
 			}
 		}
+		/*Surface detector*/
+		else if (j==8){
+                   dx=(i*TBIN/-1.76557);
+                   dhisto[i+nneg]+=1*exp(-0.5*dx*dx); 
+                   if (x<=-1.5)
+                   {
+                     dhisto[i+nneg]+=0.0691864*exp(0.0616537*x); 
+                     double dx2=(x+-8.27888)/14.0146;
+                     dhisto[i+nneg]+=-0.035261*exp(-0.5*dx2*dx2);
+                   }
+                }
 	}
 	sizes[0]=4;
 	sizes[1]=4;

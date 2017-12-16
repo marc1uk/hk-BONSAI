@@ -1,4 +1,4 @@
-{
+void analysis(){
 	//TFile *file0 = TFile::Open("Cylinder100_10MeV_Uni_Iso.tune.root");
 	//TFile *file0 = TFile::Open("Cylinder80_10MeV_Uni_Iso.tune.root");
 	//TFile *file0 = TFile::Open("Cylinder60_10MeV_Uni_Iso.tune.root");
@@ -7,10 +7,13 @@
 	//TFile *file0 = TFile::Open("SK_12BL_10MeV_Uni_Iso.tune.root");
 	//TFile *file0 = TFile::Open("HK20BL_10MeV_Uni_Iso.tune.root");
 	//TFile *file0 = TFile::Open("HK20PMT_10MeV_Uni_Iso.tune.root");
+	//TFile *file0 = TFile::Open("Cylinder8x14_10MeV_Uni_Iso.tune.root");
+	//TFile *file0 = TFile::Open("SKtest_10MeV_Uni_Iso.tune.root");
 
 	TF1 *fit = new  TF1();
 	//TF1 *fit = new TF1("fit","gaus(0)*(x<1.5)+(x>=1.5)*(expo(3)+gaus(5)+expo(8))",-60,250);
 	TF1 *fit = new TF1("fit","gaus(0)*(x<1.5)+(x>=1.5)*(expo(3)+expo(5)+expo(7))",-60,250);
+	fit->SetNpx(1000);
 	//expo = exp([0]+[1]*x)
 	likelihood->Draw();
 	fit ->SetParameter(0,5.85655e+04);
